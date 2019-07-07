@@ -23,20 +23,40 @@ function getSrc(node) {
 }
 
 function getPath(node) {
-  const [src] = getSrc(node);
+  const [value] = getSrc(node);
 
-  if (src.type === "MustacheTag") {
+  if (value.type === "MustacheTag") {
     // TODO:
     // infer import
     // throw if dynamic
     return "";
   }
-  return "./static/" + src.data;
+  return "./static/" + value.data;
+}
+
+async function replace(edited, node) {
+  const { content, offset } = await edited;
+  const path = getPath(node);
+  const [{ start, end }] = getSrc(node);
+
+  // const srcset = Object.keys(options.sizes).map( s =>
+  //   sharp(options.sizes[s])
+  //     .resize(options.desktopSize)
+  //     .toFile(options.outputDir + "/" + s + "-" + path)
+  // );
+
+  const base64 = await getBase64(path);
+
+  return {
+    content:
+      content.substr(0, start + offset) + base64 + content.substr(end + offset),
+    offset: offset + base64.length - (end - start)
+  };
 }
 
 async function replaceImages(content, options) {
   let ast;
-  let imageNode;
+  const imageNodes = [];
 
   try {
     ast = svelte.parse(content);
@@ -48,24 +68,21 @@ async function replaceImages(content, options) {
         return;
       }
 
-      imageNode = node;
+      imageNodes.push(node);
     }
   });
 
-  if (!imageNode) return content;
+  if (!imageNodes.length) return content;
 
-  const path = getPath(imageNode);
-  const [{ raw }] = getSrc(imageNode);
+  const processed = await imageNodes.reduce(
+    async (edited, node) => replace(edited, node),
+    {
+      content,
+      offset: 0
+    }
+  );
 
-  // const srcset = Object.keys(options.sizes).map( s =>
-  //   sharp(options.sizes[s])
-  //     .resize(options.desktopSize)
-  //     .toFile(options.outputDir + "/" + s + "-" + path)
-  // );
-
-  const base64 = await getBase64(path);
-
-  return content.replace(raw, base64);
+  return processed.content;
 }
 
 module.exports = function getPreprocessor(options = defaults) {
