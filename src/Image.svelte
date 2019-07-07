@@ -1,13 +1,18 @@
 <script>
   import Waypoint from "svelte-waypoint";
 
+  export let c = "";
+
   export let alt = "";
   export let width = "";
   export let height = "";
   export let src = "";
   export let srcset = "";
-  export let placeholder = "";
-  export let c = "";
+  export let fit = "cover";
+  export let sizes = {
+    sm: 400,
+    lg: 800
+  };
 
   let loaded = false;
 
@@ -23,14 +28,22 @@
   }
 </script>
 
+<style>
+img {
+  object-position: center;
+}
+</style>
+
 <Waypoint
   {c}
   once
   on:enter={load}
-  style="height: {height}px; filter: blur({blur}px); transition: filter;"
 >
-  {#if loaded}
-    <img class={c} {src} {alt} {width} {height} {srcset} />
-  {:else if placeholder}
-    <img class={c} src={placeholder} {alt} {width} {height} />
+  <img
+    class={c}
+    {...$$props}
+    {alt}
+    srcset={srcset}
+    style="filter: blur({blur}px); transition: filter; object-fit: {fit}"
+  >
 </Waypoint>
