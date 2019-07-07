@@ -1,6 +1,5 @@
 const svelte = require("svelte/compiler");
 const sharp = require("sharp");
-const util = require("util");
 
 const defaults = {
   tagName: "Image",
@@ -23,13 +22,6 @@ function getSrc(node) {
   return node.attributes.find(a => a.name === "src").value;
 }
 
-function updateSrc(node, value) {
-  const [src] = getSrc(node);
-
-  src.raw = value;
-  src.data = value;
-}
-
 function getPath(node) {
   const [src] = getSrc(node);
 
@@ -42,41 +34,38 @@ function getPath(node) {
   return "./static/" + src.data;
 }
 
-function replaceImages(content, options) {
+async function replaceImages(content, options) {
   let ast;
+  let imageNode;
 
   try {
     ast = svelte.parse(content);
   } catch {}
 
   svelte.walk(ast, {
-    enter: async node => {
+    enter: node => {
       if (node.name !== options.tagName) {
         return;
       }
 
-      const path = getPath(node);
-      const [{ raw }] = getSrc(node);
-
-      // const srcset = Object.keys(options.sizes).map( s =>
-      //   sharp(options.sizes[s])
-      //     .resize(options.desktopSize)
-      //     .toFile(options.outputDir + "/" + s + "-" + path)
-      // );
-
-      const base64 = await getBase64(path);
-
-      content = content.replace(raw, base64);
-
-      console.log(content);
+      imageNode = node;
     }
   });
 
-  if (content.includes("Great")) {
-    console.log(content, "TTTT");
-  }
+  if (!imageNode) return content;
 
-  return content;
+  const path = getPath(imageNode);
+  const [{ raw }] = getSrc(imageNode);
+
+  // const srcset = Object.keys(options.sizes).map( s =>
+  //   sharp(options.sizes[s])
+  //     .resize(options.desktopSize)
+  //     .toFile(options.outputDir + "/" + s + "-" + path)
+  // );
+
+  const base64 = await getBase64(path);
+
+  return content.replace(raw, base64);
 }
 
 module.exports = function getPreprocessor(options = defaults) {
@@ -86,8 +75,8 @@ module.exports = function getPreprocessor(options = defaults) {
   };
 
   return {
-    markup: function image({ content }) {
-      return { code: replaceImages(content, options) };
-    }
+    markup: async ({ content }) => ({
+      code: await replaceImages(content, options)
+    })
   };
 };
