@@ -1,5 +1,5 @@
 <script>
-  import Waypoint from "components/Waypoint.svelte";
+  import Waypoint from "svelte-waypoint";
 
   export let alt = "";
   export let width = "";
