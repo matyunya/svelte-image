@@ -1,0 +1,28 @@
+{
+  "name": "svelte-image",
+  "version": "0.0.1",
+  "description": "Image processing with sharp for Svelte",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matyunya/svelte-image.git"
+  },
+  "keywords": [
+    "svelte",
+    "sharp",
+    "image",
+    "processing"
+  ],
+  "author": "Maxim Matyunin",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/matyunya/svelte-image/issues"
+  },
+  "homepage": "https://github.com/matyunya/svelte-image#readme",
+  "dependencies": {
+    "svelte-waypoint": "^0.1.0"
+  }
+}
