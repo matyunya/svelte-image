@@ -5,10 +5,7 @@ const fs = require("fs");
 
 const defaults = {
   tagName: "Image",
-  sizes: {
-    sm: 400,
-    lg: 800
-  },
+  sizes: [400, 800, 1200],
   outputDir: "./static"
 };
 
@@ -50,27 +47,60 @@ function add(content, value, start, end, offset) {
 }
 
 function resize(options, pathname) {
-  return async s => {
-    const outPath = path.resolve(options.outputDir, getFilename(pathname, s));
+  return async size => {
+    const filename = getFilename(pathname, size);
 
-    if (fs.existsSync(outPath)) return;
+    const outPath = path.resolve(options.outputDir, filename);
 
-    return sharp(pathname)
-      .resize(options.sizes[s])
-      .toFile(outPath);
+    if (fs.existsSync(outPath)) {
+      return {
+        ...(await sharp(pathname).metadata()),
+        filename,
+        size
+      };
+    }
+
+    return {
+      ...(await sharp(pathname)
+        .resize(size)
+        .toFile(outPath)),
+      size,
+      filename
+    };
   };
+}
+
+function getSrcset(sizes) {
+  const srcSetValue = sizes.map(s => `${s.filename} ${s.size}w`).join(",\n");
+  const sizesValue = sizes
+    .map((s, i) =>
+      i === sizes.length + 1
+        ? `${s.size}px`
+        : `(max-width: ${s.size}px) ${s.size}px`
+    )
+    .join(",\n");
+
+  return `srcset=\'${srcSetValue}\' sizes=\'${sizesValue}\'`;
 }
 
 async function replace(edited, node, options) {
   const { content, offset } = await edited;
   const pathname = getPathname(node);
-  const [{ start, end }] = getProp(node, "src");
-
-  await Promise.all(Object.keys(options.sizes).map(resize(options, pathname)));
 
   const base64 = await getBase64(pathname);
+  const [{ start, end }] = getProp(node, "src");
 
-  return add(content, base64, start, end, offset);
+  const withBase64 = add(content, base64, start, end, offset);
+
+  const sizes = await Promise.all(options.sizes.map(resize(options, pathname)));
+
+  return add(
+    withBase64.content,
+    getSrcset(sizes),
+    end + 1,
+    end + 2,
+    withBase64.offset
+  );
 }
 
 async function replaceImages(content, options) {
@@ -96,12 +126,12 @@ async function replaceImages(content, options) {
     offset: 0
   };
 
-  const { content } = await imageNodes.reduce(
+  const processed = await imageNodes.reduce(
     async (edited, node) => replace(edited, node, options),
     beforeProcessed
   );
 
-  return content;
+  return processed.content;
 }
 
 module.exports = function getPreprocessor(options = defaults) {
