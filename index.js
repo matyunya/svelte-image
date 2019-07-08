@@ -6,12 +6,13 @@ const fs = require("fs");
 const defaults = {
   tagName: "Image",
   sizes: [400, 800, 1200],
-  outputDir: "./static"
+  breakpoints: [375, 768, 1024],
+  outputDir: "g/"
 };
 
 async function getBase64(pathname) {
   const s = await sharp(pathname)
-    .resize(128)
+    .resize(96)
     .toBuffer();
 
   return "data:image/png;base64," + s.toString("base64");
@@ -50,12 +51,18 @@ function resize(options, pathname) {
   return async size => {
     const filename = getFilename(pathname, size);
 
-    const outPath = path.resolve(options.outputDir, filename);
+    const dir = "./static/" + options.outputDir;
+
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir);
+    }
+
+    const outPath = path.resolve(dir, filename);
 
     if (fs.existsSync(outPath)) {
       return {
         ...(await sharp(pathname).metadata()),
-        filename,
+        filename: options.outputDir + filename,
         size
       };
     }
@@ -65,22 +72,17 @@ function resize(options, pathname) {
         .resize(size)
         .toFile(outPath)),
       size,
-      filename
+      filename: options.outputDir + filename
     };
   };
 }
 
-function getSrcset(sizes) {
-  const srcSetValue = sizes.map(s => `${s.filename} ${s.size}w`).join(",\n");
-  const sizesValue = sizes
-    .map((s, i) =>
-      i === sizes.length + 1
-        ? `${s.size}px`
-        : `(max-width: ${s.size}px) ${s.size}px`
-    )
+function getSrcset(sizes, options) {
+  const srcSetValue = sizes
+    .map((s, i) => `${s.filename} ${options.breakpoints[i]}w`)
     .join(",\n");
 
-  return `srcset=\'${srcSetValue}\' sizes=\'${sizesValue}\'`;
+  return `srcset=\'${srcSetValue}\'`;
 }
 
 async function replace(edited, node, options) {
@@ -96,7 +98,7 @@ async function replace(edited, node, options) {
 
   return add(
     withBase64.content,
-    getSrcset(sizes),
+    getSrcset(sizes, options),
     end + 1,
     end + 2,
     withBase64.offset
