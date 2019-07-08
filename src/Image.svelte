@@ -34,16 +34,12 @@ img {
 }
 </style>
 
-<Waypoint
-  {c}
-  once
-  on:enter={load}
+<Waypoint once on:enter={load} />
+<img
+  class={c}
+  {...$$props}
+  {alt}
+  srcset={srcset}
+  style="filter: blur({blur}px); transition: filter 2s; object-fit: {fit}"
 >
-  <img
-    class={c}
-    {...$$props}
-    {alt}
-    srcset={srcset}
-    style="filter: blur({blur}px); transition: filter; object-fit: {fit}"
-  >
-</Waypoint>
+
