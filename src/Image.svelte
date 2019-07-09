@@ -17,13 +17,10 @@
   $: opacity = loaded ? 1 : 0;
   $: opacityPlaceholder = loaded ? 0 : 1;
 
-  function load() {
-    const img = new Image();
-    img.src = src;
+  let img = {};
 
-    img.onload = () => {
-      loaded = true;
-    };
+  function load(img) {
+    img.onload = () => loaded = true;
   }
 </script>
 
@@ -35,28 +32,30 @@ img {
   left: 0;
   width: 100%;
   opacity: 0;
-  transition: opacity 0.2s ease, filter 0.4s ease;
+  transition: opacity 0.4s ease, filter 0.6s ease;
 }
 </style>
 
-<Waypoint once on:enter={load} />
-<div style="position: relative; width: 100%;">
-  <div style="position: relative; overflow: hidden">
-    <div style="width:100%;padding-bottom:66.60000000000001%;" />
-    <img
-      {src}
-      {alt}
-      style="opacity: {opacityPlaceholder}; filter: blur(10px);"
-    >
-    <img
-      class={c}
-      {alt}
-      {width}
-      {height}
-      {fit}
-      {sizes}
-      srcset={loaded ? srcset : ''}
-      style="filter: blur({blur}px); opacity: {opacity}; object-fit: {fit}"
-    >
+<Waypoint c="w-full" style="min-height: 100px" once>
+  <div style="position: relative; width: 100%;">
+    <div style="position: relative; overflow: hidden">
+      <div style="width:100%;padding-bottom:66.60000000000001%;" />
+      <img
+        {src}
+        {alt}
+        style="opacity: {opacityPlaceholder}; filter: blur(10px);"
+      >
+      <img
+        use:load
+        class={c}
+        {alt}
+        {width}
+        {height}
+        {fit}
+        {sizes}
+        {srcset}
+        style="filter: blur({blur}px); opacity: {opacity}; object-fit: {fit}"
+      >
+    </div>
   </div>
-</div>
+</Waypoint>
