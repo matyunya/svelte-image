@@ -1,13 +1,13 @@
 # Svelte image
 [Demo](https://svelte-image.netlify.com/)
 
-Svelte image is a preprocessor which automates image optimization using (sharp)[https://github.com/lovell/sharp].
+Svelte image is a preprocessor which automates image optimization using [sharp](https://github.com/lovell/sharp).
 
 It parses your `img` tags, optimizes or inlines them and replaces src accordingly.
 
 `Image` component enables lazyloading and serving multiple sizes via `srcset`.
 
-This package is heavily inspired by (gatsby image)[https://www.gatsbyjs.org/packages/gatsby-image/].
+This package is heavily inspired by [gatsby image](https://www.gatsbyjs.org/packages/gatsby-image/).
 
 ### Installation
 ```
