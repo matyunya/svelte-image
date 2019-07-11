@@ -47,6 +47,11 @@ Will generate
 >
 ```
 
+### Image path
+
+Please note that the library works only with relative paths in Sapper at the moment.
+`<Image src="images/fuji.jpg">` works whereas `<Image src="/images/fuji.jpg">` doesn't.
+
 ### Configuration and defaults
 
 Image accepts following configuration object:
