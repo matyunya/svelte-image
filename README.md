@@ -1,5 +1,5 @@
 # Svelte image
-[Demo](https://svelte-image.netlify.com/)
+[Demo](https://svelte-image.matyunya.now.sh/)
 
 Svelte image is a preprocessor which automates image optimization using [sharp](https://github.com/lovell/sharp).
 
