@@ -25,9 +25,12 @@
   },
   "homepage": "https://github.com/matyunya/svelte-image#readme",
   "dependencies": {
+    "potrace": "^2.1.2",
     "sharp": "^0.22.1",
+    "smelte": "^0.0.8",
     "svelte": "^3.6.4",
-    "svelte-waypoint": "^0.1.0"
+    "svelte-waypoint": "^0.1.0",
+    "svgo": "^1.2.2"
   },
   "devDependencies": {
     "eslint": "^6.0.1",

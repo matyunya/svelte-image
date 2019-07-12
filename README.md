@@ -65,7 +65,13 @@ const defaults = {
   tagName: "Image", // default component name
   sizes: [400, 800, 1200], // array of sizes for srcset in pixels
   breakpoints: [375, 768, 1024], // array of screen size breakpoints at which sizes above will be applied
-  outputDir: "g/"
+  outputDir: "g/",
+  placeholder: "trace", // or "blur"
+  trace: {
+    background: "#fff",
+    color: "#002fa7",
+    threshold: 120
+  }
 };
 ```
 
@@ -74,9 +80,9 @@ const defaults = {
 - [x] Set base64 placeholder
 - [x] Optimize normal images using `img` tag
 - [x] Image lazy loading
+- [x] Optional SVG trace placeholder
 - [ ] Support WebP
 - [ ] Optimize background or whatever images found in CSS
 - [ ] Resolve imported images (only works with string pathnames at the moment)
-- [ ] Optional SVG trace placeholder
 
 Feedback and feature requests are welcome!

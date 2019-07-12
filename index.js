@@ -1,6 +1,7 @@
 const svelte = require("svelte/compiler");
 const sharp = require("sharp");
 const path = require("path");
+const util = require("util");
 const fs = require("fs");
 
 const defaults = {
@@ -11,7 +12,13 @@ const defaults = {
   tagName: "Image",
   sizes: [400, 800, 1200],
   breakpoints: [375, 768, 1024],
-  outputDir: "g/"
+  outputDir: "g/",
+  placeholder: "trace", // or "blur"
+  trace: {
+    background: "#fff",
+    color: "#002fa7",
+    threshold: 120
+  }
 };
 
 async function getBase64(pathname, inlined = false) {
@@ -26,6 +33,30 @@ async function getBase64(pathname, inlined = false) {
     .toBuffer();
 
   return "data:image/png;base64," + s.toString("base64");
+}
+
+const optimizeSVG = svg => {
+  const svgo = require(`svgo`);
+  const res = new svgo({
+    multipass: true,
+    floatPrecision: 0,
+    datauri: "base64"
+  });
+
+  return res.optimize(svg).then(({ data }) => data);
+};
+
+async function getTrace(pathname, options) {
+  const potrace = require("potrace");
+  const trace = util.promisify(potrace.trace);
+
+  const s = await sharp(pathname)
+    .resize(500)
+    .toBuffer();
+
+  const res = await trace(s, options.trace);
+
+  return optimizeSVG(res);
 }
 
 function getProp(node, attr) {
@@ -130,7 +161,11 @@ async function replaceInComponent(edited, node, options) {
 
   const sizes = await Promise.all(options.sizes.map(resize(options, pathname)));
 
-  const base64 = await getBase64(pathname);
+  const base64 =
+    options.placeholder === "blur"
+      ? await getBase64(pathname)
+      : await getTrace(pathname, options);
+
   const [{ start, end }] = getProp(node, "src");
 
   const withBase64 = insert(content, base64, start, end, offset);
