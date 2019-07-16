@@ -56,8 +56,7 @@
 </style>
 
 <Waypoint
-  c="w-full"
-  style="min-height: 100px"
+  style="min-height: 100px; width: 100%"
   once
   threshold={1.0}>
   <div class:loaded style="position: relative; width: 100%;">
