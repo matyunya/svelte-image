@@ -8,6 +8,7 @@
   export let height = "";
   export let src = "";
   export let srcset = "";
+  export let srcsetWebp = "";
   export let blur = false;
   export let sizes = "(max-width: 1000px) 100vw, 1000px";
 
@@ -38,12 +39,12 @@
   .placeholder {
     opacity: 1;
     transition: opacity 0.5s ease;
-    transition-delay: 0.5s;
+    transition-delay: 0.7s;
   }
    .main {
     opacity: 0;
     transition: opacity 0.5s ease;
-    transition-delay: 0.5s;
+    transition-delay: 0.7s;
   }
 
   .loaded .placeholder {
@@ -67,16 +68,19 @@
         {src}
         {alt}
       >
-      <img
-        use:load
-        class="main {c}"
-        class:blur
-        {alt}
-        {width}
-        {height}
-        {sizes}
-        {srcset}
-      >
+      <picture>
+        <source type="image/webp" srcset={srcsetWebp}>
+        <source srcset={srcset}>
+        <img
+          use:load
+          class="main {c}"
+          class:blur
+          {alt}
+          {width}
+          {height}
+          {sizes}
+        >
+    </picture>
     </div>
   </div>
 </Waypoint>

@@ -9,6 +9,12 @@ const defaults = {
   inlineBelow: 10000,
   compressionLevel: 8,
   quality: 70,
+  webpOptions: {
+    quality: 75,
+    lossless: false,
+    force: true
+  },
+  webp: true,
   tagName: "Image",
   sizes: [400, 800, 1200],
   breakpoints: [375, 768, 1024],
@@ -92,6 +98,10 @@ function getFilenameWithSize(p, size) {
   return `${getBasename(p)}-${size}${path.extname(p)}`;
 }
 
+function getWebpFilenameWithSize(p, size) {
+  return `${getBasename(p)}-${size}.webp`;
+}
+
 function insert(content, value, start, end, offset) {
   return {
     content:
@@ -100,16 +110,31 @@ function insert(content, value, start, end, offset) {
   };
 }
 
+function getOutPath(options, filename) {
+  const dir = "./static/" + options.outputDir;
+  return (outPath = path.resolve(dir, filename));
+}
+
 function resize(options, pathname) {
   return async size => {
     const filename = getFilenameWithSize(pathname, size);
-
-    const dir = "./static/" + options.outputDir;
-    const outPath = path.resolve(dir, filename);
-
+    const outPath = getOutPath(options, filename);
     const meta = await sharp(pathname).metadata();
+    const filenameWebp = getWebpFilenameWithSize(pathname, size);
+    const outPathWebp = getOutPath(options, filenameWebp);
 
     if (meta.width < size) return null;
+
+    if (options.webp && !fs.existsSync(outPathWebp)) {
+      await sharp(pathname)
+        .resize({ width: size, withoutEnlargement: true })
+        .webp({
+          quality: options.qualityWebp,
+          lossless: false,
+          force: true
+        })
+        .toFile(outPathWebp);
+    }
 
     if (fs.existsSync(outPath)) {
       return {
@@ -123,7 +148,11 @@ function resize(options, pathname) {
       ...(await sharp(pathname)
         .resize({ width: size, withoutEnlargement: true })
         .jpeg({ quality: options.quality, progressive: true, force: false })
-        .webp({ quality: options.quality, lossless: true, force: false })
+        .webp({
+          quality: options.qualityWebp,
+          lossless: false,
+          force: true
+        })
         .png({ compressionLevel: options.compressionLevel, force: false })
         .toFile(outPath)),
       size,
@@ -140,13 +169,22 @@ function init(options) {
   }
 }
 
-function getSrcset(sizes, options) {
+const srcsetLine = options => (s, i) =>
+  `${s.filename} ${options.breakpoints[i]}w`;
+
+const srcsetLineWebp = options => (s, i) =>
+  `${s.filename} ${options.breakpoints[i]}w`
+    .replace("jpg", "webp")
+    .replace("png", "webp")
+    .replace("jpeg", "webp");
+
+function getSrcset(sizes, options, lineFn = srcsetLine, tag = "srcset") {
   const srcSetValue = sizes
     .filter(f => f)
-    .map((s, i) => `${s.filename} ${options.breakpoints[i]}w`)
+    .map(lineFn(options))
     .join(",\n");
 
-  return `srcset=\'${srcSetValue}\'`;
+  return ` ${tag}=\'${srcSetValue}\' `;
 }
 
 async function replaceInComponent(edited, node, options) {
@@ -170,12 +208,22 @@ async function replaceInComponent(edited, node, options) {
 
   const withBase64 = insert(content, base64, start, end, offset);
 
-  return insert(
+  const withSrcset = insert(
     withBase64.content,
     getSrcset(sizes, options),
     end + 1,
     end + 2,
     withBase64.offset
+  );
+
+  if (!options.webp) return withSrcset;
+
+  return insert(
+    withSrcset.content,
+    getSrcset(sizes, options, srcsetLineWebp, "srcsetWebp"),
+    end + 1,
+    end + 2,
+    withSrcset.offset
   );
 }
 

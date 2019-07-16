@@ -66,8 +66,14 @@ const defaults = {
   sizes: [400, 800, 1200], // array of sizes for srcset in pixels
   breakpoints: [375, 768, 1024], // array of screen size breakpoints at which sizes above will be applied
   outputDir: "g/",
-  placeholder: "trace", // or "blur"
-  trace: {
+  placeholder: "trace", // or "blur",
+  webpOptions: { // WebP options [sharp docs](https://sharp.pixelplumbing.com/en/stable/api-output/#webp)
+    quality: 75,
+    lossless: false,
+    force: true
+  },
+  webp: true,
+  trace: { // Potrace options for SVG placeholder
     background: "#fff",
     color: "#002fa7",
     threshold: 120
@@ -81,7 +87,7 @@ const defaults = {
 - [x] Optimize normal images using `img` tag
 - [x] Image lazy loading
 - [x] Optional SVG trace placeholder
-- [ ] Support WebP
+- [x] Support WebP
 - [ ] Optimize background or whatever images found in CSS
 - [ ] Resolve imported images (only works with string pathnames at the moment)
 

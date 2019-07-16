@@ -29,7 +29,7 @@
     "sharp": "^0.22.1",
     "smelte": "^0.0.8",
     "svelte": "^3.6.4",
-    "svelte-waypoint": "^0.1.0",
+    "svelte-waypoint": "^0.1.3",
     "svgo": "^1.2.2"
   },
   "devDependencies": {
