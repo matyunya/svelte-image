@@ -128,11 +128,7 @@ function resize(options, pathname) {
     if (options.webp && !fs.existsSync(outPathWebp)) {
       await sharp(pathname)
         .resize({ width: size, withoutEnlargement: true })
-        .webp({
-          quality: options.qualityWebp,
-          lossless: false,
-          force: true
-        })
+        .webp(options.webpOptions)
         .toFile(outPathWebp);
     }
 
@@ -148,11 +144,7 @@ function resize(options, pathname) {
       ...(await sharp(pathname)
         .resize({ width: size, withoutEnlargement: true })
         .jpeg({ quality: options.quality, progressive: true, force: false })
-        .webp({
-          quality: options.qualityWebp,
-          lossless: false,
-          force: true
-        })
+        .webp(options.webpOptions)
         .png({ compressionLevel: options.compressionLevel, force: false })
         .toFile(outPath)),
       size,
