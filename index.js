@@ -261,7 +261,7 @@ async function replaceImages(content, options) {
 
   try {
     ast = svelte.parse(content);
-  } catch {}
+  } catch (e) {}
 
   svelte.walk(ast, {
     enter: node => {
