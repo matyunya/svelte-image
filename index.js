@@ -141,6 +141,7 @@ function resize(options, pathname) {
     }
 
     return {
+      ...meta,
       ...(await sharp(pathname)
         .resize({ width: size, withoutEnlargement: true })
         .jpeg({ quality: options.quality, progressive: true, force: false })
@@ -208,14 +209,22 @@ async function replaceInComponent(edited, node, options) {
     withBase64.offset
   );
 
-  if (!options.webp) return withSrcset;
-
-  return insert(
+  const withRatio = insert(
     withSrcset.content,
-    getSrcset(sizes, options, srcsetLineWebp, "srcsetWebp"),
+    ` ratio=\'${(1 / (sizes[0].width / sizes[0].height)) * 100}%\' `,
     end + 1,
     end + 2,
     withSrcset.offset
+  );
+
+  if (!options.webp) return withRatio;
+
+  return insert(
+    withRatio.content,
+    getSrcset(sizes, options, srcsetLineWebp, "srcsetWebp"),
+    end + 1,
+    end + 2,
+    withRatio.offset
   );
 }
 
