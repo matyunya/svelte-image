@@ -15,8 +15,6 @@
 
   let loaded = false;
 
-  let img = {};
-
   function load(img) {
     img.onload = () => loaded = true;
   }
@@ -76,6 +74,7 @@
           class="main {c}"
           class:blur
           {alt}
+          {srcset}
           {width}
           {height}
           {sizes}

@@ -144,8 +144,7 @@ function resize(options, pathname) {
       ...meta,
       ...(await sharp(pathname)
         .resize({ width: size, withoutEnlargement: true })
-        .jpeg({ quality: options.quality, progressive: true, force: false })
-        .webp(options.webpOptions)
+        .jpeg({ quality: options.quality, progressive: false, force: false })
         .png({ compressionLevel: options.compressionLevel, force: false })
         .toFile(outPath)),
       size,
@@ -165,6 +164,8 @@ function init(options) {
 const srcsetLine = options => (s, i) =>
   `${s.filename} ${options.breakpoints[i]}w`;
 
+const srcLine = () => s => s.filename;
+
 const srcsetLineWebp = options => (s, i) =>
   `${s.filename} ${options.breakpoints[i]}w`
     .replace("jpg", "webp")
@@ -172,7 +173,8 @@ const srcsetLineWebp = options => (s, i) =>
     .replace("jpeg", "webp");
 
 function getSrcset(sizes, options, lineFn = srcsetLine, tag = "srcset") {
-  const srcSetValue = sizes
+  const s = Array.isArray(sizes) ? sizes : [sizes];
+  const srcSetValue = s
     .filter(f => f)
     .map(lineFn(options))
     .join(",\n");
@@ -239,7 +241,7 @@ async function optimize(p, options) {
   }
 
   await sharp(inPath)
-    .jpeg({ quality: options.quality, progressive: true, force: false })
+    .jpeg({ quality: options.quality, progressive: false, force: false })
     .webp({ quality: options.quality, lossless: true, force: false })
     .png({ compressionLevel: options.compressionLevel, force: false })
     .toFile(outPath);
