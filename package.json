@@ -23,6 +23,10 @@
   "bugs": {
     "url": "https://github.com/matyunya/svelte-image/issues"
   },
+  "files": [
+    "index.js",
+    "src/Image.svelte"
+  ],
   "homepage": "https://github.com/matyunya/svelte-image#readme",
   "dependencies": {
     "potrace": "^2.1.2",

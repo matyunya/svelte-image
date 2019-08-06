@@ -80,7 +80,6 @@ function getPathname(node) {
   ) {
     // TODO:
     // resolve imported path
-
     throw new Error("Can't process the image");
   }
   return path.resolve("./static/", value.data);

@@ -91,4 +91,6 @@ const defaults = {
 - [ ] Optimize background or whatever images found in CSS
 - [ ] Resolve imported images (only works with string pathnames at the moment)
 
-Feedback and feature requests are welcome!
+### Development
+
+Run `yarn && yarn dev` in the `/dev` directory. This is the source code of [demo](https://svelte-image.matyunya.now.sh/) homepage.
