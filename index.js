@@ -76,7 +76,7 @@ function willNotProcess(reason) {
 }
 
 function willProcess(pathname) {
-  return { willNotProcess: false, path: pathname, reason: undefined };
+  return { willNotProcess: false, pathname, reason: undefined };
 }
 
 function getPathname(node) {
