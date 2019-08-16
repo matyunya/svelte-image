@@ -3,7 +3,7 @@
 
 Svelte image is a preprocessor which automates image optimization using [sharp](https://github.com/lovell/sharp).
 
-It parses your `img` tags, optimizes or inlines them and replaces src accordingly.
+It parses your `img` tags, optimizes or inlines them and replaces src accordingly. (External images are not optimized.)
 
 `Image` component enables lazyloading and serving multiple sizes via `srcset`.
 
