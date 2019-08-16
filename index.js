@@ -69,20 +69,34 @@ function getProp(node, attr) {
   return node.attributes.find(a => a.name === attr).value;
 }
 
+const IS_EXTERNAL = /^(https?:)?\/\//;
+
+function willNotProcess(reason) {
+  return { willNotProcess: true, reason, pathname: undefined };
+}
+
+function willProcess(pathname) {
+  return { willNotProcess: false, path: pathname, reason: undefined };
+}
+
 function getPathname(node) {
   const [value] = getProp(node, "src");
 
   // dynamic or empty value
-  if (
-    value.type === "MustacheTag" ||
-    value.type === "AttributeShorthand" ||
-    !value.data
-  ) {
-    // TODO:
-    // resolve imported path
-    throw new Error("Can't process the image");
+  if (value.type === "MustacheTag" || value.type === "AttributeShorthand") {
+    return willNotProcess(`Cannot process a dynamic value: ${value.type}`);
   }
-  return path.resolve("./static/", value.data);
+  if (!value.data) {
+    return willNotProcess("The `src` is blank");
+  }
+  if (IS_EXTERNAL.test(value.data)) {
+    return willNotProcess(`The \`src\` is external: ${value.data}`);
+  }
+
+  // TODO:
+  // resolve imported path
+
+  return willProcess(path.resolve("./static/", value.data));
 }
 
 function getBasename(p) {
@@ -183,11 +197,10 @@ function getSrcset(sizes, options, lineFn = srcsetLine, tag = "srcset") {
 
 async function replaceInComponent(edited, node, options) {
   const { content, offset } = await edited;
-  let pathname = "";
 
-  try {
-    pathname = getPathname(node);
-  } catch (e) {
+  let { pathname, willNotProcess, reason } = getPathname(node);
+  if (willNotProcess) {
+    console.error(reason);
     return { content, offset };
   }
 
@@ -250,19 +263,20 @@ async function optimize(p, options) {
 
 async function replaceInImg(edited, node, options) {
   const { content, offset } = await edited;
-  let p = "";
 
-  try {
-    p = getPathname(node);
-  } catch (e) {
+  let { pathname, willNotProcess } = getPathname(node);
+  if (willNotProcess) {
     return { content, offset };
   }
 
   const [{ start, end }] = getProp(node, "src");
 
-  const outUrl = await optimize(p, options);
-
-  return insert(content, outUrl, start, end, offset);
+  try {
+    const outUrl = await optimize(pathname, options);
+    return insert(content, outUrl, start, end, offset);
+  } catch (e) {
+    return { content, offset };
+  }
 }
 
 async function replaceImages(content, options) {
