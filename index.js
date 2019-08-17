@@ -103,8 +103,8 @@ function getBasename(p) {
   return path.basename(p, path.extname(p));
 }
 
-function getFilename(p) {
-  return path.basename(p);
+function getRelativePath(p) {
+  return path.relative("./static/", p);
 }
 
 function getFilenameWithSize(p, size) {
@@ -125,7 +125,7 @@ function insert(content, value, start, end, offset) {
 
 function getOutPath(options, filename) {
   const dir = "./static/" + options.outputDir;
-  return (outPath = path.resolve(dir, filename));
+  return path.resolve(dir, filename);
 }
 
 function resize(options, pathname) {
@@ -166,12 +166,22 @@ function resize(options, pathname) {
   };
 }
 
-function init(options) {
-  const dir = "./static/" + options.outputDir;
-
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir);
+// Pass a string, then it will call itself with an array
+function mkdirp(dir) {
+  if (typeof dir === "string") {
+    if (fs.existsSync(dir)) {
+      return dir;
+    }
+    return mkdirp(dir.split("/"));
   }
+
+  return dir.reduce((created, nextPart) => {
+    const newDir = path.join(created, nextPart);
+    if (!fs.existsSync(newDir)) {
+      fs.mkdirSync(newDir);
+    }
+    return newDir;
+  }, "");
 }
 
 const srcsetLine = options => (s, i) =>
@@ -242,15 +252,25 @@ async function replaceInComponent(edited, node, options) {
   );
 }
 
+function ensureOutPathExists(outPath) {
+  mkdirp(path.dirname(path.join("./static", getRelativePath(outPath))));
+}
+
 async function optimize(p, options) {
-  const inPath = path.resolve("./static/", getFilename(p));
-  const outPath = path.resolve("./static/", options.outputDir, getFilename(p));
-  const outUrl = options.outputDir + getFilename(p);
+  const inPath = path.resolve("./static/", getRelativePath(p));
+  const outPath = path.resolve(
+    "./static/",
+    options.outputDir,
+    getRelativePath(p)
+  );
+  const outUrl = options.outputDir + getRelativePath(p);
 
   const { size } = fs.statSync(inPath);
   if (options.inlineBelow && size < options.inlineBelow) {
     return getBase64(inPath, true);
   }
+
+  ensureOutPathExists(outPath);
 
   await sharp(inPath)
     .jpeg({ quality: options.quality, progressive: false, force: false })
@@ -321,8 +341,6 @@ module.exports = function getPreprocessor(options = defaults) {
     ...defaults,
     ...options
   };
-
-  init(options);
 
   return {
     markup: async ({ content }) => ({
