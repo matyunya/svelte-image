@@ -66,7 +66,12 @@ async function getTrace(pathname, options) {
 }
 
 function getProp(node, attr) {
-  return node.attributes.find(a => a.name === attr).value;
+  const prop = node.attributes.find(a => a.name === attr);
+  return prop ? prop.value : undefined;
+}
+
+function getSrc(node) {
+  return getProp(node, "src") || [{}];
 }
 
 const IS_EXTERNAL = /^(https?:)?\/\//;
@@ -80,7 +85,7 @@ function willProcess(pathname) {
 }
 
 function getPathname(node) {
-  const [value] = getProp(node, "src");
+  const [value] = getSrc(node);
 
   // dynamic or empty value
   if (value.type === "MustacheTag" || value.type === "AttributeShorthand") {
@@ -221,7 +226,7 @@ async function replaceInComponent(edited, node, options) {
       ? await getBase64(pathname)
       : await getTrace(pathname, options);
 
-  const [{ start, end }] = getProp(node, "src");
+  const [{ start, end }] = getSrc(node);
 
   const withBase64 = insert(content, base64, start, end, offset);
 
@@ -289,7 +294,7 @@ async function replaceInImg(edited, node, options) {
     return { content, offset };
   }
 
-  const [{ start, end }] = getProp(node, "src");
+  const [{ start, end }] = getSrc(node);
 
   try {
     const outUrl = await optimize(pathname, options);
