@@ -27,6 +27,30 @@ const defaults = {
   }
 };
 
+function getPathsObject(nodeSrc, options) {
+  const inPath = path.resolve("./static/", nodeSrc);
+  const outDir = path.dirname(
+    path.resolve("./static/", options.outputDir, nodeSrc)
+  );
+  const filename = path.basename(inPath);
+  const outUrl = path.relative("./static", path.join(outDir, filename));
+
+  return {
+    inPath,
+    outDir,
+    outPath: path.join(outDir, filename),
+    outUrl,
+    getResizePaths: size => {
+      const filenameWithSize = getFilenameWithSize(inPath, size);
+      return {
+        outPath: path.join(outDir, filenameWithSize),
+        outUrl: path.join(path.dirname(outUrl), filenameWithSize),
+        outPathWebp: path.join(outDir, getWebpFilenameWithSize(inPath, size))
+      };
+    }
+  };
+}
+
 async function getBase64(pathname, inlined = false) {
   let size = 64;
 
@@ -66,21 +90,34 @@ async function getTrace(pathname, options) {
 }
 
 function getProp(node, attr) {
-  return node.attributes.find(a => a.name === attr).value;
+  const prop = node.attributes.find(a => a.name === attr);
+  return prop ? prop.value : undefined;
+}
+
+function getSrc(node) {
+  return getProp(node, "src") || [{}];
 }
 
 const IS_EXTERNAL = /^(https?:)?\/\//;
 
 function willNotProcess(reason) {
-  return { willNotProcess: true, reason, pathname: undefined };
+  return {
+    willNotProcess: true,
+    reason,
+    paths: undefined
+  };
 }
 
-function willProcess(pathname) {
-  return { willNotProcess: false, pathname, reason: undefined };
+function willProcess(nodeSrc, options) {
+  return {
+    willNotProcess: false,
+    reason: undefined,
+    paths: getPathsObject(nodeSrc, options)
+  };
 }
 
-function getPathname(node) {
-  const [value] = getProp(node, "src");
+function getProcessingPathsForNode(node, options) {
+  const [value] = getSrc(node);
 
   // dynamic or empty value
   if (value.type === "MustacheTag" || value.type === "AttributeShorthand") {
@@ -96,7 +133,13 @@ function getPathname(node) {
   // TODO:
   // resolve imported path
 
-  return willProcess(path.resolve("./static/", value.data));
+  const fullPath = path.resolve("./static/", value.data);
+
+  if (fs.existsSync(fullPath)) {
+    return willProcess(value.data, options);
+  } else {
+    return willNotProcess(`The image file does not exist: ${fullPath}`);
+  }
 }
 
 function getBasename(p) {
@@ -115,6 +158,10 @@ function getWebpFilenameWithSize(p, size) {
   return `${getBasename(p)}-${size}.webp`;
 }
 
+function ensureOutDirExists(outDir) {
+  mkdirp(path.join("./static", getRelativePath(outDir)));
+}
+
 function insert(content, value, start, end, offset) {
   return {
     content:
@@ -123,23 +170,17 @@ function insert(content, value, start, end, offset) {
   };
 }
 
-function getOutPath(options, filename) {
-  const dir = "./static/" + options.outputDir;
-  return path.resolve(dir, filename);
-}
-
-function resize(options, pathname) {
+function resize(options, paths) {
   return async size => {
-    const filename = getFilenameWithSize(pathname, size);
-    const outPath = getOutPath(options, filename);
-    const meta = await sharp(pathname).metadata();
-    const filenameWebp = getWebpFilenameWithSize(pathname, size);
-    const outPathWebp = getOutPath(options, filenameWebp);
+    const { outPath, outUrl, outPathWebp } = paths.getResizePaths(size);
+    const meta = await sharp(paths.inPath).metadata();
 
     if (meta.width < size) return null;
 
+    ensureOutDirExists(paths.outDir);
+
     if (options.webp && !fs.existsSync(outPathWebp)) {
-      await sharp(pathname)
+      await sharp(paths.inPath)
         .resize({ width: size, withoutEnlargement: true })
         .webp(options.webpOptions)
         .toFile(outPathWebp);
@@ -148,20 +189,24 @@ function resize(options, pathname) {
     if (fs.existsSync(outPath)) {
       return {
         ...meta,
-        filename: options.outputDir + filename,
+        filename: outUrl,
         size
       };
     }
 
     return {
       ...meta,
-      ...(await sharp(pathname)
+      ...(await sharp(paths.inPath)
         .resize({ width: size, withoutEnlargement: true })
-        .jpeg({ quality: options.quality, progressive: false, force: false })
+        .jpeg({
+          quality: options.quality,
+          progressive: false,
+          force: false
+        })
         .png({ compressionLevel: options.compressionLevel, force: false })
         .toFile(outPath)),
       size,
-      filename: options.outputDir + filename
+      filename: outUrl
     };
   };
 }
@@ -208,20 +253,23 @@ function getSrcset(sizes, options, lineFn = srcsetLine, tag = "srcset") {
 async function replaceInComponent(edited, node, options) {
   const { content, offset } = await edited;
 
-  let { pathname, willNotProcess, reason } = getPathname(node);
+  const { paths, willNotProcess, reason } = getProcessingPathsForNode(
+    node,
+    options
+  );
   if (willNotProcess) {
     console.error(reason);
     return { content, offset };
   }
 
-  const sizes = await Promise.all(options.sizes.map(resize(options, pathname)));
+  const sizes = await Promise.all(options.sizes.map(resize(options, paths)));
 
   const base64 =
     options.placeholder === "blur"
-      ? await getBase64(pathname)
-      : await getTrace(pathname, options);
+      ? await getBase64(paths.inPath)
+      : await getTrace(paths.inPath, options);
 
-  const [{ start, end }] = getProp(node, "src");
+  const [{ start, end }] = getSrc(node);
 
   const withBase64 = insert(content, base64, start, end, offset);
 
@@ -252,48 +300,36 @@ async function replaceInComponent(edited, node, options) {
   );
 }
 
-function ensureOutPathExists(outPath) {
-  mkdirp(path.dirname(path.join("./static", getRelativePath(outPath))));
-}
-
-async function optimize(p, options) {
-  const inPath = path.resolve("./static/", getRelativePath(p));
-  const outPath = path.resolve(
-    "./static/",
-    options.outputDir,
-    getRelativePath(p)
-  );
-  const outUrl = options.outputDir + getRelativePath(p);
-
-  const { size } = fs.statSync(inPath);
+async function optimize(paths, options) {
+  const { size } = fs.statSync(paths.inPath);
   if (options.inlineBelow && size < options.inlineBelow) {
-    return getBase64(inPath, true);
+    return getBase64(paths.inPath, true);
   }
 
-  ensureOutPathExists(outPath);
+  ensureOutDirExists(paths.outDir);
 
-  await sharp(inPath)
+  await sharp(paths.inPath)
     .jpeg({ quality: options.quality, progressive: false, force: false })
     .webp({ quality: options.quality, lossless: true, force: false })
     .png({ compressionLevel: options.compressionLevel, force: false })
-    .toFile(outPath);
+    .toFile(paths.outPath);
 
-  return outUrl;
+  return paths.outUrl;
 }
 
 async function replaceInImg(edited, node, options) {
   const { content, offset } = await edited;
 
-  let { pathname, willNotProcess } = getPathname(node);
+  const { paths, willNotProcess } = getProcessingPathsForNode(node, options);
   if (willNotProcess) {
     return { content, offset };
   }
 
-  const [{ start, end }] = getProp(node, "src");
+  const [{ start, end }] = getSrc(node);
 
   try {
-    const outUrl = await optimize(pathname, options);
-    return insert(content, outUrl, start, end, offset);
+    await optimize(paths, options);
+    return insert(content, paths.outUrl, start, end, offset);
   } catch (e) {
     return { content, offset };
   }
