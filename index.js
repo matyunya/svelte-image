@@ -55,7 +55,7 @@ async function getBase64(pathname, inlined = false) {
   let size = 64;
 
   if (inlined) {
-    size = await sharp(pathname).metadata();
+    size = (await sharp(pathname).metadata()).size;
   }
 
   const s = await sharp(pathname)
@@ -170,44 +170,54 @@ function insert(content, value, start, end, offset) {
   };
 }
 
-function resize(options, paths) {
-  return async size => {
-    const { outPath, outUrl, outPathWebp } = paths.getResizePaths(size);
-    const meta = await sharp(paths.inPath).metadata();
+async function createSizes(paths, options) {
+  const smallestSize = options.sizes.sort().slice(0, 1);
+  const meta = await sharp(paths.inPath).metadata();
+  const sizes = smallestSize > meta.width ? [meta.width] : options.sizes;
 
-    if (meta.width < size) return null;
+  return (await Promise.all(
+    sizes.map(size => resize(size, paths, options, meta))
+  )).filter(x => !!x);
+}
 
-    ensureOutDirExists(paths.outDir);
+async function resize(size, paths, options, meta = null) {
+  if (!meta) {
+    meta = await sharp(paths.inPath).metadata();
+  }
+  const { outPath, outUrl, outPathWebp } = paths.getResizePaths(size);
 
-    if (options.webp && !fs.existsSync(outPathWebp)) {
-      await sharp(paths.inPath)
-        .resize({ width: size, withoutEnlargement: true })
-        .webp(options.webpOptions)
-        .toFile(outPathWebp);
-    }
+  if (meta.width < size) return null;
 
-    if (fs.existsSync(outPath)) {
-      return {
-        ...meta,
-        filename: outUrl,
-        size
-      };
-    }
+  ensureOutDirExists(paths.outDir);
 
+  if (options.webp && !fs.existsSync(outPathWebp)) {
+    await sharp(paths.inPath)
+      .resize({ width: size, withoutEnlargement: true })
+      .webp(options.webpOptions)
+      .toFile(outPathWebp);
+  }
+
+  if (fs.existsSync(outPath)) {
     return {
       ...meta,
-      ...(await sharp(paths.inPath)
-        .resize({ width: size, withoutEnlargement: true })
-        .jpeg({
-          quality: options.quality,
-          progressive: false,
-          force: false
-        })
-        .png({ compressionLevel: options.compressionLevel, force: false })
-        .toFile(outPath)),
-      size,
-      filename: outUrl
+      filename: outUrl,
+      size
     };
+  }
+
+  return {
+    ...meta,
+    ...(await sharp(paths.inPath)
+      .resize({ width: size, withoutEnlargement: true })
+      .jpeg({
+        quality: options.quality,
+        progressive: false,
+        force: false
+      })
+      .png({ compressionLevel: options.compressionLevel, force: false })
+      .toFile(outPath)),
+    size,
+    filename: outUrl
   };
 }
 
@@ -262,7 +272,7 @@ async function replaceInComponent(edited, node, options) {
     return { content, offset };
   }
 
-  const sizes = await Promise.all(options.sizes.map(resize(options, paths)));
+  const sizes = await createSizes(paths, options);
 
   const base64 =
     options.placeholder === "blur"
