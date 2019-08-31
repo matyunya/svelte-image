@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 - Resizing an image that was smaller than any of the given sizes would fail
 ### Added
+- Feature: Image/img src may now start with a "/" (and they all probably should)
 - Development: tooling to automate releases
 ### Changed
 - Changelog format update.

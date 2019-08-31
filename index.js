@@ -98,6 +98,8 @@ function getSrc(node) {
   return getProp(node, "src") || [{}];
 }
 
+// Checks beginning of string for double leading slash, or the same preceeded by
+// http or https
 const IS_EXTERNAL = /^(https?:)?\/\//;
 
 function willNotProcess(reason) {
@@ -133,10 +135,13 @@ function getProcessingPathsForNode(node, options) {
   // TODO:
   // resolve imported path
 
-  const fullPath = path.resolve("./static/", value.data);
+  // Removes a leading slash, as long as it is not followed by another slash
+  const removedDomainSlash = value.data.replace(/^\/([^\/])/, "$1");
+
+  const fullPath = path.resolve("./static/", removedDomainSlash);
 
   if (fs.existsSync(fullPath)) {
-    return willProcess(value.data, options);
+    return willProcess(removedDomainSlash, options);
   } else {
     return willNotProcess(`The image file does not exist: ${fullPath}`);
   }
