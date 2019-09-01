@@ -6,7 +6,8 @@
   "module": "dist/index.min.mjs",
   "main": "dist/index.min.js",
   "scripts": {
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "release": "ts-node --project node-scripts/tsconfig.json node-scripts/release.ts"
   },
   "repository": {
     "type": "git",
@@ -37,7 +38,16 @@
     "svgo": "^1.2.2"
   },
   "devDependencies": {
+    "@types/inquirer": "^6.5.0",
+    "@types/node": "^12.7.2",
+    "@types/semver": "^6.0.1",
     "eslint": "^6.0.1",
-    "rollup": "^1.16.6"
+    "inquirer": "^7.0.0",
+    "rollup": "^1.16.6",
+    "runscript": "^1.4.0",
+    "semver": "^6.3.0",
+    "simple-git": "^1.124.0",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.6.2"
   }
 }
