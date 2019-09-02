@@ -101,7 +101,7 @@ function getSrc(node) {
 
 // Checks beginning of string for double leading slash, or the same preceeded by
 // http or https
-const IS_EXTERNAL = /^(https?:)?\/\//;
+const IS_EXTERNAL = /^(https?:)?\/\//i;
 
 function willNotProcess(reason) {
   return {
