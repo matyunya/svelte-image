@@ -5,6 +5,7 @@ const util = require("util");
 const fs = require("fs");
 
 const defaults = {
+  extensions: ["jpg", "jpeg", "png"],
   optimizeAll: true,
   inlineBelow: 10000,
   compressionLevel: 8,
@@ -103,6 +104,17 @@ function getSrc(node) {
 // http or https
 const IS_EXTERNAL = /^(https?:)?\/\//i;
 
+function fileHasCorrectExtension(filename, options) {
+  return options.extensions
+    .map(x => x.toLowerCase())
+    .includes(
+      filename
+        .split(".")
+        .pop()
+        .toLowerCase()
+    );
+}
+
 function willNotProcess(reason) {
   return {
     willNotProcess: true,
@@ -131,6 +143,11 @@ function getProcessingPathsForNode(node, options) {
   }
   if (IS_EXTERNAL.test(value.data)) {
     return willNotProcess(`The \`src\` is external: ${value.data}`);
+  }
+  if (!fileHasCorrectExtension(value.data, options)) {
+    return willNotProcess(
+      `The file extension is not one of ${options.extensions.join(", ")}.`
+    );
   }
 
   // TODO:

@@ -58,6 +58,7 @@ Image accepts following configuration object:
 
 ```
 const defaults = {
+  extensions: ['jpg', 'jpeg', 'png'] // case insensitive. Only jpegs and pngs are currently supported. Others _may_ work by chance.
   optimizeAll: true, // optimize all images discovered in img tags
   inlineBelow: 10000, // inline all images in img tags below 10kb
   compressionLevel: 8, // png quality level
