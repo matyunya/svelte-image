@@ -13,6 +13,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Changelog format update.
 
 
+## 0.0.13 - 2019-10-06
+### Fixed
+- Images smaller than smallest size returning null meta
 
 ## 0.0.12 - 2019-08-16
 ### Added
