@@ -23,7 +23,8 @@ const defaults = {
   trace: {
     background: "#fff",
     color: "#002fa7",
-    threshold: 120
+    threshold: 120,
+    size: 500
   }
 };
 
@@ -81,7 +82,7 @@ async function getTrace(pathname, options) {
   const trace = util.promisify(potrace.trace);
 
   const s = await sharp(pathname)
-    .resize(500)
+    .resize(options.trace.size || 500)
     .toBuffer();
 
   const res = await trace(s, options.trace);
