@@ -4,9 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+
+
+## 0.0.14 - 2019-10-22
 ### Fixed
 - Resizing an image that was smaller than any of the given sizes would fail
 ### Added
+- Feature: Option for size of potrace placeholder
 - Feature: Image/img src may now start with a "/" (and they all probably should)
 - Development: tooling to automate releases
 ### Changed
