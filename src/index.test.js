@@ -1,10 +1,25 @@
+const getPreprocessor = require("./index");
 const fs = require("fs");
-const { defaults, replaceImages } = require("./main");
-const {cleanFiles, populateFiles} = require('./test/helpers')
+const {cleanFiles, populateFiles, getReplaceImages} = require('../test/helpers')
 
 beforeEach(cleanFiles);
 
-describe("Extension filtering", () => {
+describe("the main export", () => {
+  test("the module returns a function", () => {
+    expect(() => getPreprocessor()).not.toThrow();
+    expect(typeof getPreprocessor().markup).toEqual("function");
+  });
+
+  test("it does fine with basic markup", async () => {
+    const { markup } = getPreprocessor();
+    const content = `<p>It works.</p>`;
+
+    const { code } = await markup({ content: content });
+    expect(code).toEqual(`<p>It works.</p>`);
+  });
+});
+
+describe("extension filtering", () => {
   test("it filters on extensions independently", async () => {
     const errorSpy = jest
       .spyOn(console, "error")
@@ -17,30 +32,29 @@ describe("Extension filtering", () => {
       "using/imageComponent.png": "4.png"
     });
 
-    const options = {
-      ...defaults,
+    const replaceImages = getReplaceImages({
       imgTagExtensions: ["jpg", "png"],
       componentExtensions: ["jpg"],
       sizes: [200]
-    };
+    })
 
-    expect(await replaceImages(`<img src="/for/imageTag.jpg">`, options)).toEqual(
+    expect(await replaceImages(`<img src="/for/imageTag.jpg">`)).toEqual(
       `<img src="g/for/imageTag.jpg">`
     );
     expect(fs.existsSync("./static/g/for/imageTag.jpg")).toBeTruthy();
 
-    expect(await replaceImages(`<img src="/for/imageTag.png">`, options)).toEqual(
+    expect(await replaceImages(`<img src="/for/imageTag.png">`)).toEqual(
       `<img src="g/for/imageTag.png">`
     );
     expect(fs.existsSync("./static/g/for/imageTag.png")).toBeTruthy();
 
     expect(
-      await replaceImages(`<Image src="/using/imageComponent.jpg"/>`, options)
+      await replaceImages(`<Image src="/using/imageComponent.jpg"/>`)
     ).not.toEqual(`<Image src="/using/imageComponent.jpg"/>`);
     expect(fs.existsSync("./static/g/using/imageComponent-200.jpg")).toBeTruthy();
 
     expect(
-      await replaceImages(`<Image src="/using/imageComponent.png"/>`, options)
+      await replaceImages(`<Image src="/using/imageComponent.png"/>`)
     ).toEqual(`<Image src="/using/imageComponent.png"/>`);
     expect(fs.existsSync("./static/g/using/imageComponent-200.png")).not.toBeTruthy();
     expect(errorSpy).toHaveBeenCalled();

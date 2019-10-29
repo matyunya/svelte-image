@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const targetFolder = path.join(process.cwd(), "static");
+const getPreprocessor = require('../src/index')
 
 /**
  * Test helper to populate files into the expected directory and will use files
@@ -49,7 +50,14 @@ function cleanFiles() {
   return require("del")(["static"]);
 }
 
+/**
+ * Convenience function to get directly at the main thing we will be testing
+ * @param {*} options Same as the options you'd pass to getPreprocessor
+ */
+const getReplaceImages = (options) => (str) => getPreprocessor(options).markup({content:str}).then((obj) => obj.code)
+
 module.exports = {
   cleanFiles,
   populateFiles,
+  getReplaceImages
 }
