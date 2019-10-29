@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   were not processable, such as SVGs. Added an overridable list of file
   extensions for the image tag and Image Component to check against before
   attempting to process.
+- Tests! Added a few tests for the extension filtering.
+
 
 ## 0.0.14 - 2019-10-22
 ### Fixed

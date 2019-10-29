@@ -3,7 +3,7 @@ module.exports =
 /**
  * @param {Partial<typeof defaults>} options 
  */
-function getPreprocessor(options = defaults) {
+function getPreprocessor(options = {}) {
   options = {
     ...defaults,
     ...options

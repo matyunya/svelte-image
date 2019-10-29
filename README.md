@@ -119,3 +119,9 @@ const defaults = {
 ### Development
 
 Run `yarn && yarn dev` in the `/dev` directory. This is the source code of [demo](https://svelte-image.matyunya.now.sh/) homepage.
+
+### Testing
+
+You can test the preprocessor via `yarn test`. We are using Jest for that, so you can also pass a `--watch` flag to test while developing.
+
+Currently, the best way to test the Svelte component is by using it in a separate project and using yarn/npm link. The dev directory tends to have issues keeping in sync with changes to the src in the root of the repo.
