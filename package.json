@@ -3,11 +3,10 @@
   "version": "0.0.14",
   "description": "Image processing with sharp for Svelte",
   "svelte": "src/Image.svelte",
-  "module": "dist/index.min.mjs",
-  "main": "dist/index.min.js",
+  "main": "src/index.js",
   "scripts": {
-    "build": "rollup -c",
-    "release": "ts-node --project node-scripts/tsconfig.json node-scripts/release.ts"
+    "release": "ts-node --project node-scripts/tsconfig.json node-scripts/release.ts",
+    "test": "jest --run-in-band"
   },
   "repository": {
     "type": "git",
@@ -25,7 +24,7 @@
     "url": "https://github.com/matyunya/svelte-image/issues"
   },
   "files": [
-    "index.js",
+    "src/index.js",
     "src/Image.svelte"
   ],
   "homepage": "https://github.com/matyunya/svelte-image#readme",
@@ -39,11 +38,13 @@
   },
   "devDependencies": {
     "@types/inquirer": "^6.5.0",
+    "@types/jest": "^24.0.20",
     "@types/node": "^12.7.2",
     "@types/semver": "^6.0.1",
+    "del": "^5.1.0",
     "eslint": "^6.0.1",
     "inquirer": "^7.0.0",
-    "rollup": "^1.16.6",
+    "jest": "^24.9.0",
     "runscript": "^1.4.0",
     "semver": "^6.3.0",
     "simple-git": "^1.124.0",

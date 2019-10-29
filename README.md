@@ -56,24 +56,49 @@ Please note that the library works only with relative paths in Sapper at the mom
 
 Image accepts following configuration object:
 
-```
+```js
 const defaults = {
   optimizeAll: true, // optimize all images discovered in img tags
+  
+  // Case insensitive. Only files whose extension exist in this array will be
+  // processed by the <img> tag (assuming `optimizeAll` above is true). Empty
+  // the array to allow all extensions to be processed. However, only jpegs and
+  // pngs are explicitly supported.
+  imgTagExtensions: ['jpg', 'jpeg', 'png'],
+  
+  // Same as the above, except that this array applies to the Image Component.
+  // If the images passed to your image component are unknown, it might be a
+  // good idea to populate this array.
+  componentExtensions: [],
+  
   inlineBelow: 10000, // inline all images in img tags below 10kb
+
   compressionLevel: 8, // png quality level
+  
   quality: 70, // jpeg/webp quality level
+  
   tagName: "Image", // default component name
+  
   sizes: [400, 800, 1200], // array of sizes for srcset in pixels
-  breakpoints: [375, 768, 1024], // array of screen size breakpoints at which sizes above will be applied
+  
+  // array of screen size breakpoints at which sizes above will be applied
+  breakpoints: [375, 768, 1024],
+  
   outputDir: "g/",
+  
   placeholder: "trace", // or "blur",
-  webpOptions: { // WebP options [sharp docs](https://sharp.pixelplumbing.com/en/stable/api-output/#webp)
+  
+  // WebP options [sharp docs](https://sharp.pixelplumbing.com/en/stable/api-output/#webp)
+  webpOptions: {
     quality: 75,
     lossless: false,
     force: true
   },
+  
   webp: true,
-  trace: { // Potrace options for SVG placeholder
+  
+  // Potrace options for SVG placeholder
+  trace: {
     background: "#fff",
     color: "#002fa7",
     threshold: 120
@@ -94,3 +119,9 @@ const defaults = {
 ### Development
 
 Run `yarn && yarn dev` in the `/dev` directory. This is the source code of [demo](https://svelte-image.matyunya.now.sh/) homepage.
+
+### Testing
+
+You can test the preprocessor via `yarn test`. We are using Jest for that, so you can also pass a `--watch` flag to test while developing.
+
+Currently, the best way to test the Svelte component is by using it in a separate project and using yarn/npm link. The dev directory tends to have issues keeping in sync with changes to the src in the root of the repo.

@@ -6,6 +6,8 @@ const fs = require("fs");
 
 const defaults = {
   optimizeAll: true,
+  imgTagExtensions: ["jpg", "jpeg", "png"],
+  componentExtensions: [],
   inlineBelow: 10000,
   compressionLevel: 8,
   quality: 70,
@@ -101,7 +103,29 @@ function getSrc(node) {
 
 // Checks beginning of string for double leading slash, or the same preceeded by
 // http or https
-const IS_EXTERNAL = /^(https?:)?\/\//;
+const IS_EXTERNAL = /^(https?:)?\/\//i;
+
+/**
+ * Returns a boolean indicating if the filename has one of the extensions in the
+ * array. If the array is empty, all files will be accepted.
+ *
+ * @param {string} filename the name of the image file to be parsed
+ * @param {Array<string>} extensions Either of options.imgTagExtensions or
+ * options.componentExtensions
+ * @returns {boolean}
+ */
+function fileHasCorrectExtension(filename, extensions) {
+  return extensions.length === 0
+    ? true
+    : extensions
+        .map(x => x.toLowerCase())
+        .includes(
+          filename
+            .split(".")
+            .pop()
+            .toLowerCase()
+        );
+}
 
 function willNotProcess(reason) {
   return {
@@ -131,6 +155,28 @@ function getProcessingPathsForNode(node, options) {
   }
   if (IS_EXTERNAL.test(value.data)) {
     return willNotProcess(`The \`src\` is external: ${value.data}`);
+  }
+  if (
+    node.name === "img" &&
+    !fileHasCorrectExtension(value.data, options.imgTagExtensions)
+  ) {
+    return willNotProcess(
+      `The <img> tag was passed a file (${
+        value.data
+      }) whose extension is not one of ${options.imgTagExtensions.join(", ")}`
+    );
+  }
+  if (
+    node.name === options.tagName &&
+    !fileHasCorrectExtension(value.data, options.componentExtensions)
+  ) {
+    return willNotProcess(
+      `The ${options.tagName} component was passed a file (${
+        value.data
+      }) whose extension is not one of ${options.componentExtensions.join(
+        ", "
+      )}`
+    );
   }
 
   // TODO:
@@ -388,7 +434,10 @@ async function replaceImages(content, options) {
   return processed.content;
 }
 
-module.exports = function getPreprocessor(options = defaults) {
+/**
+ * @param {Partial<typeof defaults>} options 
+ */
+function getPreprocessor(options = {}) {
   options = {
     ...defaults,
     ...options
@@ -400,3 +449,10 @@ module.exports = function getPreprocessor(options = defaults) {
     })
   };
 };
+
+
+module.exports = {
+  defaults,
+  replaceImages,
+  getPreprocessor
+}

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+### Added
+- Extension filtering. `<img>` tags would incorrectly try to process files that
+  were not processable, such as SVGs. Added an overridable list of file
+  extensions for the image tag and Image Component to check against before
+  attempting to process.
+- Tests! Added a few tests for the extension filtering.
 
 
 ## 0.0.14 - 2019-10-22
