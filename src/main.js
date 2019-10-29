@@ -423,7 +423,7 @@ async function replaceImages(content, options) {
   let ast;
   const imageNodes = [];
 
-  if (!content.includes("img") || !content.includes("Image")) return content;
+  if (!content.includes("img") && !content.includes("Image")) return content;
 
   try {
     ast = svelte.parse(content);
