@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   extensions for the image tag and Image Component to check against before
   attempting to process.
 - Tests! Added a few tests for the extension filtering.
+- Performance optimization: preprocessor won't parse file contents if it doesn't
+  contain image tags.
 
 
 ## 0.0.14 - 2019-10-22
