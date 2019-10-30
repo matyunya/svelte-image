@@ -25,7 +25,8 @@
   },
   "files": [
     "src/index.js",
-    "src/Image.svelte"
+    "src/Image.svelte",
+    "src/main.js"
   ],
   "homepage": "https://github.com/matyunya/svelte-image#readme",
   "dependencies": {
