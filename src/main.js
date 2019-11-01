@@ -245,8 +245,7 @@ function insert(content, value, start, end, offset) {
 }
 
 async function createSizes(paths, options) {
-  const sizesCopy = options.sizes;
-  const smallestSize = sizesCopy.sort().slice(0, 1);
+  const smallestSize = Math.min(...options.sizes);
   const meta = await sharp(paths.inPath).metadata();
   const sizes = smallestSize > meta.width ? [meta.width] : options.sizes;
 
