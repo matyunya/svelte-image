@@ -9,7 +9,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## 0.1.2 - 2019-10-30 UTC
 ### Fixed
-- Added main.js to included files
+- Added main.js to included files.
+- Fixed reversed srcset. (https://github.com/matyunya/svelte-image/issues/28)[https://github.com/matyunya/svelte-image/issues/28]
+### Changed
+- Upgraded svelte.
+- Removed smelte from deps.
 
 
 

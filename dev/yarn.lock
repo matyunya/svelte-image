@@ -4325,15 +4325,15 @@ safe-buffer@^5.0.1, safe-buffer@^5.1.1, safe-buffer@^5.1.2:
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
 
-sapper@^0.27.0:
-  version "0.27.4"
-  resolved "https://registry.yarnpkg.com/sapper/-/sapper-0.27.4.tgz#81991bd98de05781c943ea87c764632caca3156c"
-  integrity sha512-BYdiJSiyVguu2FZBbl87mn8KhSu+C8JRl7FurclXbMgpiMW7Yt74HPCcu/hXOubvvZw0kVTnzBlAGJCXZmldnA==
+sapper@^0.27.9:
+  version "0.27.9"
+  resolved "https://registry.yarnpkg.com/sapper/-/sapper-0.27.9.tgz#c3ec00b44dd35d25e89d2d697c9bb1d27409dbe4"
+  integrity sha512-v3b3UgGeVhFUOpA5IZgdThdr4nZ6aMH6IxDsg1Yu2UWHWEV9vW/Zehch9M/xqJNp/x9n9X+S9syJg1s5QOOmFA==
   dependencies:
     html-minifier "^4.0.0"
     http-link-header "^1.0.2"
-    shimport "^1.0.0"
-    sourcemap-codec "^1.4.4"
+    shimport "^1.0.1"
+    sourcemap-codec "^1.4.6"
     string-hash "^1.1.3"
 
 sax@>=0.6.0, sax@~1.2.4:
@@ -4443,7 +4443,7 @@ shell-quote@^1.6.1:
     array-reduce "~0.0.0"
     jsonify "~0.0.0"
 
-shimport@^1.0.0:
+shimport@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/shimport/-/shimport-1.0.1.tgz#32ea5637e7707fdfa9037516f8c2a97786fc9031"
   integrity sha512-Imf4gH+8WQmT1GvxS/x79qpmfnE6m50hyN1ucatX+7oMCgmaF8obZWCPIzSUe6+P+YmXM46lkP2pxiV2/lt9Og==
@@ -4500,25 +4500,10 @@ slice-ansi@^2.1.0:
     astral-regex "^1.0.0"
     is-fullwidth-code-point "^2.0.0"
 
-smelte@^0.0.8:
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/smelte/-/smelte-0.0.8.tgz#f5ec1a8560364d6c32df433c7a100d8c411bb0ad"
-  integrity sha512-KRuzjfAKaPJmH36K9d6q7tXnd1dnV2rSh/6VUmCujWYcrU2adc7T1uso4UWtkpGwGYfoATooQ5KUFeXi7Zw3JA==
-  dependencies:
-    compression "^1.7.1"
-    express "^4.17.1"
-    postcss-nesting "^7.0.0"
-    sirv "^0.4.0"
-    svelte "^3.6.7"
-    svelte-waypoint "^0.1.2"
-    tailwindcss "^1.0.1"
-    tailwindcss-elevation "^0.3.0"
-    tinycolor2 "^1.4.1"
-
-smelte@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/smelte/-/smelte-0.1.1.tgz#b1cfa77b37c863c78775be270180cc96355795dd"
-  integrity sha512-uDkHqZXVSgjl2sCEEfFX2AsnucF/X0NE3T8rth9QYGd1944BCeq29ERXZCW10nW1y7K9qlpFv2T5r9DJCGPdQA==
+smelte@^0.1.6:
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/smelte/-/smelte-0.1.6.tgz#4cdad36716a925f2dac95efefdfd8cb824116ae8"
+  integrity sha512-CWIGyo76PLW7D3pOcQoh+OLs9pV1MTUrYxICyQSoI2cvI35m7g7pF+1Kmwj+9Vpdkxhrh0QH7B1BA+kf88WdrA==
   dependencies:
     svelte-waypoint "^0.1.2"
     tinycolor2 "^1.4.1"
@@ -4541,7 +4526,7 @@ source-map@^0.6.0, source-map@^0.6.1, source-map@~0.6.0, source-map@~0.6.1:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.6.1.tgz#74722af32e9614e9c287a8d0bbde48b5e2f1a263"
   integrity sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==
 
-sourcemap-codec@^1.4.4:
+sourcemap-codec@^1.4.4, sourcemap-codec@^1.4.6:
   version "1.4.6"
   resolved "https://registry.yarnpkg.com/sourcemap-codec/-/sourcemap-codec-1.4.6.tgz#e30a74f0402bad09807640d39e971090a08ce1e9"
   integrity sha512-1ZooVLYFxC448piVLBbtOxFcXwnymH9oUF8nRd3CuYDVvkRBxRl6pB4Mtas5a4drtL+E8LDgFkQNcgIw6tc8Hg==
@@ -4733,12 +4718,11 @@ supports-color@^6.1.0:
     has-flag "^3.0.0"
 
 "svelte-image@file:..":
-  version "0.0.14"
+  version "0.1.3-pre"
   dependencies:
     potrace "^2.1.2"
     sharp "^0.22.1"
-    smelte "^0.0.8"
-    svelte "^3.6.4"
+    svelte "^3.12.1"
     svelte-waypoint "^0.1.3"
     svgo "^1.2.2"
 
@@ -4755,10 +4739,10 @@ svelte-waypoint@^0.1.2, svelte-waypoint@^0.1.3:
   resolved "https://registry.yarnpkg.com/svelte-waypoint/-/svelte-waypoint-0.1.3.tgz#4095ac4ebf2f675fde4f72f3a63b5da7c014bed4"
   integrity sha512-YwPFy6iekwKy5DzF/2586Domq1IAZPEH3VSkNzGjWK9VpwzeVj7FxA7WSlRNPsEhnVoQ93w0QJFyy0QaMY8ANQ==
 
-svelte@^3.6.11, svelte@^3.6.4, svelte@^3.6.7:
-  version "3.6.11"
-  resolved "https://registry.yarnpkg.com/svelte/-/svelte-3.6.11.tgz#1ad6638d629ff8f280639687aef0a6a659f09802"
-  integrity sha512-pm8k34grr20MaL0+Tx2m7rxJ0MP6mqj0FxWcTWuOc6TR6TYLq5251shgfhVpy5n7NQUGyp2VqiBAGdSodWmvtg==
+svelte@^3.12.1:
+  version "3.12.1"
+  resolved "https://registry.yarnpkg.com/svelte/-/svelte-3.12.1.tgz#ddfacd43272ac3255907c682b74ee7d3d8b06b0c"
+  integrity sha512-t29WJNjHIqfrdMcVXqIyRfgLEaNz7MihKXTpb8qHlbzvf0WyOOIhIlwIGvl6ahJ9+9CLJwz0sjhFNAmPgo8BHg==
 
 svgo@^1.0.0:
   version "1.2.2"
