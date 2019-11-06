@@ -1,6 +1,10 @@
 const getPreprocessor = require("./index");
 const fs = require("fs");
-const {cleanFiles, populateFiles, getReplaceImages} = require('../test/helpers')
+const {
+  cleanFiles,
+  populateFiles,
+  getReplaceImages
+} = require("../test/helpers");
 
 beforeEach(cleanFiles);
 
@@ -36,7 +40,7 @@ describe("extension filtering", () => {
       imgTagExtensions: ["jpg", "png"],
       componentExtensions: ["jpg"],
       sizes: [200]
-    })
+    });
 
     expect(await replaceImages(`<img src="/for/imageTag.jpg">`)).toEqual(
       `<img src="g/for/imageTag.jpg">`
@@ -51,13 +55,47 @@ describe("extension filtering", () => {
     expect(
       await replaceImages(`<Image src="/using/imageComponent.jpg"/>`)
     ).not.toEqual(`<Image src="/using/imageComponent.jpg"/>`);
-    expect(fs.existsSync("./static/g/using/imageComponent-200.jpg")).toBeTruthy();
+    expect(
+      fs.existsSync("./static/g/using/imageComponent-200.jpg")
+    ).toBeTruthy();
 
     expect(
       await replaceImages(`<Image src="/using/imageComponent.png"/>`)
     ).toEqual(`<Image src="/using/imageComponent.png"/>`);
-    expect(fs.existsSync("./static/g/using/imageComponent-200.png")).not.toBeTruthy();
+    expect(
+      fs.existsSync("./static/g/using/imageComponent-200.png")
+    ).not.toBeTruthy();
     expect(errorSpy).toHaveBeenCalled();
     expect(errorSpy.mock.calls[0][0]).toMatch("imageComponent.png");
+  });
+});
+
+describe("inlining images in <img> tags", () => {
+  test("works below threshold", async () => {
+    populateFiles({
+      "a.png": "github.png"
+    });
+    const replaceImages = getReplaceImages({
+      inlineBelow: 999999999
+    });
+
+    expect(await replaceImages(`<img src="/a.png">`)).toMatch(
+      /<img src="data:image\/png;base64,[^"]+">/
+    );
+    expect(fs.existsSync("./static/g/a.png")).not.toBeTruthy();
+  });
+
+  test("ignores above threshold", async () => {
+    populateFiles({
+      "a.png": "github.png"
+    });
+    const replaceImages = getReplaceImages({
+      inlineBelow: 1
+    });
+
+    expect(await replaceImages(`<img src="/a.png">`)).toMatch(
+      `<img src="g/a.png">`
+    );
+    expect(fs.existsSync("./static/g/a.png")).toBeTruthy();
   });
 });
