@@ -345,7 +345,6 @@ async function replaceInComponent(edited, node, options) {
     console.error(reason);
     return { content, offset };
   }
-
   const sizes = await createSizes(paths, options);
 
   const base64 =
@@ -412,8 +411,8 @@ async function replaceInImg(edited, node, options) {
   const [{ start, end }] = getSrc(node);
 
   try {
-    await optimize(paths, options);
-    return insert(content, paths.outUrl, start, end, offset);
+    const outUri = await optimize(paths, options);
+    return insert(content, outUri, start, end, offset);
   } catch (e) {
     return { content, offset };
   }
@@ -447,7 +446,6 @@ async function replaceImages(content, options) {
     content,
     offset: 0
   };
-
   const processed = await imageNodes.reduce(async (edited, node) => {
     if (node.name === "img") {
       return replaceInImg(edited, node, options);
