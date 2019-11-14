@@ -120,7 +120,12 @@ function getProp(node, attr) {
 }
 
 function getSrc(node) {
-  return getProp(node, "src") || [{}];
+  try {
+    return getProp(node, "src") || [{}];
+  } catch (err) {
+    console.log("Was unable to retrieve image src", err);
+    return [{}];
+  }
 }
 
 // Checks beginning of string for double leading slash, or the same preceeded by
@@ -249,9 +254,9 @@ async function createSizes(paths, options) {
   const meta = await sharp(paths.inPath).metadata();
   const sizes = smallestSize > meta.width ? [meta.width] : options.sizes;
 
-  return (await Promise.all(
-    sizes.map(size => resize(size, paths, options, meta))
-  )).filter(x => !!x);
+  return (
+    await Promise.all(sizes.map(size => resize(size, paths, options, meta)))
+  ).filter(x => !!x);
 }
 
 async function resize(size, paths, options, meta = null) {
