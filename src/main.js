@@ -115,7 +115,7 @@ async function getTrace(pathname, options) {
 }
 
 function getProp(node, attr) {
-  const prop = node.attributes.find(a => a.name === attr);
+  const prop = (node.attributes || []).find(a => a.name === attr);
   return prop ? prop.value : undefined;
 }
 
