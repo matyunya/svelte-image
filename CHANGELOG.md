@@ -6,6 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 ### Fixed
 - Bug where inlining on `<img>` failed and caused missing assets.
+- Fixed node attributes undefined error. [issues/32](https://github.com/matyunya/svelte-image/issues/32)
 ### Added
 - Catch exception when src is not provided
 
@@ -20,7 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## 0.1.2 - 2019-10-30 UTC
 ### Fixed
 - Added main.js to included files.
-- Fixed reversed srcset. (https://github.com/matyunya/svelte-image/issues/28)[https://github.com/matyunya/svelte-image/issues/28]
+- Fixed reversed srcset. [issues/28](https://github.com/matyunya/svelte-image/issues/28)
 ### Changed
 - Upgraded svelte.
 - Removed smelte from deps.
