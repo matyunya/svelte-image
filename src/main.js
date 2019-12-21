@@ -431,7 +431,9 @@ async function replaceImages(content, options) {
 
   try {
     ast = svelte.parse(content);
-  } catch {}
+  } catch (e) {
+    console.error(e, "Error parsing component content");
+  }
 
   svelte.walk(ast, {
     enter: node => {
