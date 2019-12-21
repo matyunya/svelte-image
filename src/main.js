@@ -437,7 +437,10 @@ async function replaceImages(content, options) {
 
   svelte.walk(ast, {
     enter: node => {
-      if (node.type!=='Element') return;
+      if (!["Element", "Fragment", "InlineComponent"].includes(node.type)) {
+        return;
+      }
+
       if (options.optimizeAll && node.name === "img") {
         imageNodes.push(node);
         return;
