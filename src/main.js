@@ -334,7 +334,7 @@ function getSrcset(sizes, options, lineFn = srcsetLine, tag = "srcset") {
   const srcSetValue = s
     .filter(f => f)
     .map(lineFn(options))
-    .join(",\n");
+    .join();
 
   return ` ${tag}=\'${srcSetValue}\' `;
 }
