@@ -427,7 +427,7 @@ async function replaceImages(content, options) {
   let ast;
   const imageNodes = [];
 
-  if (!content.includes("img") && !content.includes("Image")) return content;
+  if (!content.includes("<img") && !content.includes("<Image")) return content;
 
   try {
     ast = svelte.parse(content);
@@ -435,6 +435,7 @@ async function replaceImages(content, options) {
 
   svelte.walk(ast, {
     enter: node => {
+      if (node.type!=='Element') return;
       if (options.optimizeAll && node.name === "img") {
         imageNodes.push(node);
         return;
