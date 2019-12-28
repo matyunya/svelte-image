@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+
+
+
+## 0.1.9 - 2019-12-28 UTC
 ### Added
 - Lazy prop to enable disabling Waypoint.
 - `class`, `placeholderClass`, `wrapperClass` props.
