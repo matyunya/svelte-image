@@ -4,7 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
-
+### Added
+- Lazy prop to enable disabling Waypoint.
+- `class`, `placeholderClass`, `wrapperClass` props.
+### Changed
+- Bumped Waypoint version
+- Remove `\n` from srcset [PR](https://github.com/matyunya/svelte-image/pull/38).
 
 
 ## 0.1.6 - 2019-12-21 UTC

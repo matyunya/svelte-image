@@ -1,8 +1,7 @@
 <script>
   import Waypoint from "svelte-waypoint";
 
-  export let c = "";
-
+  export let c = ""; // deprecated
   export let alt = "";
   export let width = "";
   export let height = "";
@@ -12,8 +11,15 @@
   export let ratio = "100%";
   export let blur = false;
   export let sizes = "(max-width: 1000px) 100vw, 1000px";
+  export let threshold = 1.0;
+  export let lazy = true;
+  export let wrapperClass = "";
+  export let placeholderClass = "";
 
-  let loaded = false;
+  let className = "";
+  export { className as class };
+
+  let loaded = !lazy;
 
   function load(img) {
     img.onload = () => loaded = true;
@@ -55,14 +61,16 @@
 </style>
 
 <Waypoint
+  class={wrapperClass}
   style="min-height: 100px; width: 100%"
   once
-  threshold={1.0}>
+  {threshold}
+  disabled={!lazy}>
   <div class:loaded style="position: relative; width: 100%;">
     <div style="position: relative; overflow: hidden">
       <div style="width:100%;padding-bottom:{ratio};" />
       <img
-        class="placeholder"
+        class="placeholder {placeholderClass}"
         {src}
         {alt}
       >
@@ -71,7 +79,7 @@
         <source srcset={srcset}>
         <img
           use:load
-          class="main {c}"
+          class="main {c} {className}"
           class:blur
           {alt}
           {srcset}

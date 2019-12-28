@@ -106,6 +106,27 @@ const defaults = {
 };
 ```
 
+### Image component props
+  Standard image tag props.
+  - `class` *default: ""*
+  - `alt` *default: ""*
+  - `width` *default: ""*
+  - `height` *default: ""*
+
+  - `c` *default: ""* Class string // deprecated in favor of `class`
+  - `wrapperClass` *default: ""* Classes passed to Waypoint wrapper
+  - `placeholderClass` *default: ""* Classes passed to placeholder
+  - `threshold` *default: 1.0* "A threshold of 1.0 means that when 100% of the target is visible within the element specified by the root option, the callback is invoked."
+  - `lazy` *default: true* Disables Waypoint.
+
+  Following props are filled by preprocessor:
+  - `src` *default: ""*
+  - `srcset` *default: ""*
+  - `srcsetWebp` *default: ""*
+  - `ratio` *default: "100%"*
+  - `blur` *default: false*
+  - `sizes` *default: "(max-width: 1000px) 100vw, 1000px"*
+
 ### Features
 - [x] Generate and add responsive images
 - [x] Set base64 placeholder
