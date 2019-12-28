@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 - Bumped Waypoint version
 - Remove `\n` from srcset [PR](https://github.com/matyunya/svelte-image/pull/38).
+- Upgraded Sharp to support Node 13 [issues/37](https://github.com/matyunya/svelte-image/issues/37).
 
 
 ## 0.1.6 - 2019-12-21 UTC
