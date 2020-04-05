@@ -3,6 +3,8 @@ const sharp = require("sharp");
 const path = require("path");
 const util = require("util");
 const fs = require("fs");
+const crypto = require('crypto');
+const axios = require('axios');
 
 const defaults = {
   optimizeAll: true, // optimize all images discovered in img tags
@@ -49,8 +51,35 @@ const defaults = {
     background: "#fff",
     color: "#002fa7",
     threshold: 120
-  }
+  },
+
+  // Wheter to download and optimize remote images loaded from a url
+  optimizeRemote: true,
 };
+
+async function downloadImage (url, folder = '.') {
+  const { headers } = await axios.head(url)
+
+  const [type, ext] = headers['content-type'].split('/')
+  if (type !== 'image') return null
+    
+  const hash = crypto.createHash('sha1').update(url).digest('hex');
+  const filename = `${hash}.${ext}`;
+  const saveTo = path.resolve(folder, filename);
+
+  const writer = fs.createWriteStream(saveTo);
+  const response = await axios({
+    url,
+    method: 'GET',
+    responseType: 'stream'
+  });
+  response.data.pipe(writer);
+
+  return new Promise((resolve, reject) => {
+    writer.on('finish', () => resolve(filename))
+    writer.on('error', reject)
+  })
+} 
 
 function getPathsObject(nodeSrc, options) {
   const inPath = path.resolve("./static/", nodeSrc);
@@ -170,7 +199,7 @@ function willProcess(nodeSrc, options) {
   };
 }
 
-function getProcessingPathsForNode(node, options) {
+async function getProcessingPathsForNode(node, options) {
   const [value] = getSrc(node);
 
   // dynamic or empty value
@@ -179,9 +208,6 @@ function getProcessingPathsForNode(node, options) {
   }
   if (!value.data) {
     return willNotProcess("The `src` is blank");
-  }
-  if (IS_EXTERNAL.test(value.data)) {
-    return willNotProcess(`The \`src\` is external: ${value.data}`);
   }
   if (
     node.name === "img" &&
@@ -209,8 +235,19 @@ function getProcessingPathsForNode(node, options) {
   // TODO:
   // resolve imported path
 
-  // Removes a leading slash, as long as it is not followed by another slash
-  const removedDomainSlash = value.data.replace(/^\/([^\/])/, "$1");
+  let removedDomainSlash
+  if (IS_EXTERNAL.test(value.data)) {
+    if (!options.optimizeRemote) {
+      return willNotProcess(`The \`src\` is external: ${value.data}`);
+    } else {
+      removedDomainSlash = await downloadImage(value.data, './static');
+      if (removedDomainSlash === null) {
+        return willNotProcess(`The url of is not an image: ${value.data}`); 
+      }
+    }
+  } else {
+    removedDomainSlash = value.data.replace(/^\/([^\/])/, "$1");
+  }
 
   const fullPath = path.resolve("./static/", removedDomainSlash);
 
@@ -342,7 +379,7 @@ function getSrcset(sizes, options, lineFn = srcsetLine, tag = "srcset") {
 async function replaceInComponent(edited, node, options) {
   const { content, offset } = await edited;
 
-  const { paths, willNotProcess, reason } = getProcessingPathsForNode(
+  const { paths, willNotProcess, reason } = await getProcessingPathsForNode(
     node,
     options
   );
