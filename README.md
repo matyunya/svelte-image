@@ -11,8 +11,9 @@ This package is heavily inspired by [gatsby image](https://www.gatsbyjs.org/pack
 
 ### Installation
 ```
-yarn add svelte-image
+yarn add svelte-image -D
 ```
+`svelte-image` needs to be added as `dev` dependency as Svelte [requires original component source](https://github.com/sveltejs/sapper-template#using-external-components) 
 
 In your `rollup.config.js` add `image` to preprocess section:
 
