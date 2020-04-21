@@ -52,6 +52,31 @@ Will generate
 Please note that the library works only with relative paths in Sapper at the moment.
 `<Image src="images/fuji.jpg">` works whereas `<Image src="/images/fuji.jpg">` doesn't.
 
+#### Svelte + Rollup
+To use without Sapper, the generated `static/g` folder needs to be copied to the `public` folder. Use [rollup-plugin-copy](https://www.npmjs.com/package/rollup-plugin-copy) in `rollup.config.js`:
+
+```js
+import svelte from 'rollup-plugin-svelte'
+import image from 'svelte-image'
+import copy from 'rollup-plugin-copy'
+
+export default {
+  ...
+  plugins: [
+    ...
+    svelte({
+      ...
+      preprocess: {
+        ...image({...})
+      }
+    }),
+    copy({
+      targets: [{ src: 'static/g', dest: 'public' }],
+    }),
+  ]
+}
+```
+
 ### Configuration and defaults
 
 Image accepts following configuration object:
