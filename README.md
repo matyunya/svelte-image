@@ -11,8 +11,9 @@ This package is heavily inspired by [gatsby image](https://www.gatsbyjs.org/pack
 
 ### Installation
 ```
-yarn add svelte-image
+yarn add svelte-image -D
 ```
+`svelte-image` needs to be added as `dev` dependency as Svelte [requires original component source](https://github.com/sveltejs/sapper-template#using-external-components) 
 
 In your `rollup.config.js` add `image` to preprocess section:
 
@@ -51,6 +52,31 @@ Will generate
 
 Please note that the library works only with relative paths in Sapper at the moment.
 `<Image src="images/fuji.jpg">` works whereas `<Image src="/images/fuji.jpg">` doesn't.
+
+#### Svelte + Rollup
+To use without Sapper, the generated `static/g` folder needs to be copied to the `public` folder. Use [rollup-plugin-copy](https://www.npmjs.com/package/rollup-plugin-copy) in `rollup.config.js`:
+
+```js
+import svelte from 'rollup-plugin-svelte'
+import image from 'svelte-image'
+import copy from 'rollup-plugin-copy'
+
+export default {
+  ...
+  plugins: [
+    ...
+    svelte({
+      ...
+      preprocess: {
+        ...image({...})
+      }
+    }),
+    copy({
+      targets: [{ src: 'static/g', dest: 'public' }],
+    }),
+  ]
+}
+```
 
 ### Configuration and defaults
 
