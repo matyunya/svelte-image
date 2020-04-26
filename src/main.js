@@ -236,6 +236,7 @@ async function getProcessingPathsForNode(node) {
 
   // TODO:
   // resolve imported path
+  // refactor externals
 
   let removedDomainSlash
   if (IS_EXTERNAL.test(value.data)) {
