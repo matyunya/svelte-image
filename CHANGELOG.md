@@ -5,14 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-
-
 ## 0.2.0 - 2020-4-26 UTC
+### Fixed
+- Broken tests
+- Missing `await` in `replaceInImg`
 
-
-
-## 0.2.0 - 2020-4-26 UTC
-
+### Added
+- Option for fetching remote images
+- `publicDir` prop for non-Sapper projects
 
 
 ## 0.1.9 - 2019-12-28 UTC
