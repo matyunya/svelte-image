@@ -6,7 +6,7 @@ const fs = require("fs");
 const crypto = require('crypto');
 const axios = require('axios');
 
-const defaults = {
+let options = {
   optimizeAll: true, // optimize all images discovered in img tags
 
   // Case insensitive. Only files whose extension exist in this array will be
@@ -35,6 +35,8 @@ const defaults = {
 
   outputDir: "g/",
 
+  publicDir: "./static/",
+
   placeholder: "trace", // or "blur",
 
   // WebP options [sharp docs](https://sharp.pixelplumbing.com/en/stable/api-output/#webp)
@@ -62,7 +64,7 @@ async function downloadImage (url, folder = '.') {
 
   const [type, ext] = headers['content-type'].split('/')
   if (type !== 'image') return null
-    
+
   const hash = crypto.createHash('sha1').update(url).digest('hex');
   const filename = `${hash}.${ext}`;
   const saveTo = path.resolve(folder, filename);
@@ -79,15 +81,15 @@ async function downloadImage (url, folder = '.') {
     writer.on('finish', () => resolve(filename))
     writer.on('error', reject)
   })
-} 
+}
 
-function getPathsObject(nodeSrc, options) {
-  const inPath = path.resolve("./static/", nodeSrc);
+function getPathsObject(nodeSrc) {
+  const inPath = path.resolve(options.publicDir, nodeSrc);
   const outDir = path.dirname(
-    path.resolve("./static/", options.outputDir, nodeSrc)
+    path.resolve(options.publicDir, options.outputDir, nodeSrc)
   );
   const filename = path.basename(inPath);
-  const outUrl = path.relative("./static", path.join(outDir, filename));
+  const outUrl = path.relative(options.publicDir, path.join(outDir, filename));
 
   return {
     inPath,
@@ -130,7 +132,7 @@ const optimizeSVG = svg => {
   return res.optimize(svg).then(({ data }) => data);
 };
 
-async function getTrace(pathname, options) {
+async function getTrace(pathname) {
   const potrace = require("potrace");
   const trace = util.promisify(potrace.trace);
 
@@ -191,15 +193,15 @@ function willNotProcess(reason) {
   };
 }
 
-function willProcess(nodeSrc, options) {
+function willProcess(nodeSrc) {
   return {
     willNotProcess: false,
     reason: undefined,
-    paths: getPathsObject(nodeSrc, options)
+    paths: getPathsObject(nodeSrc),
   };
 }
 
-async function getProcessingPathsForNode(node, options) {
+async function getProcessingPathsForNode(node) {
   const [value] = getSrc(node);
 
   // dynamic or empty value
@@ -240,19 +242,19 @@ async function getProcessingPathsForNode(node, options) {
     if (!options.optimizeRemote) {
       return willNotProcess(`The \`src\` is external: ${value.data}`);
     } else {
-      removedDomainSlash = await downloadImage(value.data, './static');
+      removedDomainSlash = await downloadImage(value.data, options.publicDir);
       if (removedDomainSlash === null) {
-        return willNotProcess(`The url of is not an image: ${value.data}`); 
+        return willNotProcess(`The url of is not an image: ${value.data}`);
       }
     }
   } else {
     removedDomainSlash = value.data.replace(/^\/([^\/])/, "$1");
   }
 
-  const fullPath = path.resolve("./static/", removedDomainSlash);
+  const fullPath = path.resolve(options.publicDir, removedDomainSlash);
 
   if (fs.existsSync(fullPath)) {
-    return willProcess(removedDomainSlash, options);
+    return willProcess(removedDomainSlash);
   } else {
     return willNotProcess(`The image file does not exist: ${fullPath}`);
   }
@@ -263,7 +265,7 @@ function getBasename(p) {
 }
 
 function getRelativePath(p) {
-  return path.relative("./static/", p);
+  return path.relative(options.publicDir, p);
 }
 
 function getFilenameWithSize(p, size) {
@@ -275,7 +277,7 @@ function getWebpFilenameWithSize(p, size) {
 }
 
 function ensureOutDirExists(outDir) {
-  mkdirp(path.join("./static", getRelativePath(outDir)));
+  mkdirp(path.join(options.publicDir, getRelativePath(outDir)));
 }
 
 function insert(content, value, start, end, offset) {
@@ -286,17 +288,17 @@ function insert(content, value, start, end, offset) {
   };
 }
 
-async function createSizes(paths, options) {
+async function createSizes(paths) {
   const smallestSize = Math.min(...options.sizes);
   const meta = await sharp(paths.inPath).metadata();
   const sizes = smallestSize > meta.width ? [meta.width] : options.sizes;
 
   return (
     await Promise.all(sizes.map(size => resize(size, paths, options, meta)))
-  ).filter(x => !!x);
+  ).filter(Boolean);
 }
 
-async function resize(size, paths, options, meta = null) {
+async function resize(size, paths, meta = null) {
   if (!meta) {
     meta = await sharp(paths.inPath).metadata();
   }
@@ -358,15 +360,13 @@ function mkdirp(dir) {
 const srcsetLine = options => (s, i) =>
   `${s.filename} ${options.breakpoints[i]}w`;
 
-const srcLine = () => s => s.filename;
-
 const srcsetLineWebp = options => (s, i) =>
   `${s.filename} ${options.breakpoints[i]}w`
     .replace("jpg", "webp")
     .replace("png", "webp")
     .replace("jpeg", "webp");
 
-function getSrcset(sizes, options, lineFn = srcsetLine, tag = "srcset") {
+function getSrcset(sizes, lineFn = srcsetLine, tag = "srcset") {
   const s = Array.isArray(sizes) ? sizes : [sizes];
   const srcSetValue = s
     .filter(f => f)
@@ -376,23 +376,21 @@ function getSrcset(sizes, options, lineFn = srcsetLine, tag = "srcset") {
   return ` ${tag}=\'${srcSetValue}\' `;
 }
 
-async function replaceInComponent(edited, node, options) {
+async function replaceInComponent(edited, node) {
   const { content, offset } = await edited;
 
-  const { paths, willNotProcess, reason } = await getProcessingPathsForNode(
-    node,
-    options
-  );
+  const { paths, willNotProcess, reason } = await getProcessingPathsForNode(node);
+
   if (willNotProcess) {
     console.error(reason);
     return { content, offset };
   }
-  const sizes = await createSizes(paths, options);
+  const sizes = await createSizes(paths);
 
   const base64 =
     options.placeholder === "blur"
       ? await getBase64(paths.inPath)
-      : await getTrace(paths.inPath, options);
+      : await getTrace(paths.inPath);
 
   const [{ start, end }] = getSrc(node);
 
@@ -400,7 +398,7 @@ async function replaceInComponent(edited, node, options) {
 
   const withSrcset = insert(
     withBase64.content,
-    getSrcset(sizes, options),
+    getSrcset(sizes),
     end + 1,
     end + 2,
     withBase64.offset
@@ -418,14 +416,14 @@ async function replaceInComponent(edited, node, options) {
 
   return insert(
     withRatio.content,
-    getSrcset(sizes, options, srcsetLineWebp, "srcsetWebp"),
+    getSrcset(sizes, srcsetLineWebp, "srcsetWebp"),
     end + 1,
     end + 2,
     withRatio.offset
   );
 }
 
-async function optimize(paths, options) {
+async function optimize(paths) {
   const { size } = fs.statSync(paths.inPath);
   if (options.inlineBelow && size < options.inlineBelow) {
     return getBase64(paths.inPath, true);
@@ -442,10 +440,10 @@ async function optimize(paths, options) {
   return paths.outUrl;
 }
 
-async function replaceInImg(edited, node, options) {
+async function replaceInImg(edited, node) {
   const { content, offset } = await edited;
 
-  const { paths, willNotProcess } = getProcessingPathsForNode(node, options);
+  const { paths, willNotProcess } = await getProcessingPathsForNode(node);
   if (willNotProcess) {
     return { content, offset };
   }
@@ -453,14 +451,15 @@ async function replaceInImg(edited, node, options) {
   const [{ start, end }] = getSrc(node);
 
   try {
-    const outUri = await optimize(paths, options);
+    const outUri = await optimize(paths);
     return insert(content, outUri, start, end, offset);
   } catch (e) {
+    console.error(e);
     return { content, offset };
   }
 }
 
-async function replaceImages(content, options) {
+async function replaceImages(content) {
   let ast;
   const imageNodes = [];
 
@@ -496,32 +495,32 @@ async function replaceImages(content, options) {
   };
   const processed = await imageNodes.reduce(async (edited, node) => {
     if (node.name === "img") {
-      return replaceInImg(edited, node, options);
+      return replaceInImg(edited, node);
     }
-    return replaceInComponent(edited, node, options);
+    return replaceInComponent(edited, node);
   }, beforeProcessed);
 
   return processed.content;
 }
 
 /**
- * @param {Partial<typeof defaults>} options
+ * @param {Partial<typeof options>} options
  */
-function getPreprocessor(options = {}) {
+function getPreprocessor(opts = {}) {
   options = {
-    ...defaults,
-    ...options
+    ...options,
+    ...opts
   };
 
   return {
     markup: async ({ content }) => ({
-      code: await replaceImages(content, options)
+      code: await replaceImages(content)
     })
   };
 }
 
 module.exports = {
-  defaults,
+  defaults: options,
   replaceImages,
   getPreprocessor
 };
