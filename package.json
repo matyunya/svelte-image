@@ -1,6 +1,6 @@
 {
   "name": "svelte-image",
-  "version": "0.2.0",
+  "version": "0.2.1-pre",
   "description": "Image processing with sharp for Svelte",
   "svelte": "src/Image.svelte",
   "main": "src/index.js",

@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+## 0.2.0 - 2020-4-26 UTC
+
+
+
 ## 0.1.9 - 2019-12-28 UTC
 ### Added
 - Lazy prop to enable disabling Waypoint.
