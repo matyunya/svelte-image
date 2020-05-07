@@ -346,7 +346,7 @@ function mkdirp(dir) {
     if (fs.existsSync(dir)) {
       return dir;
     }
-    return mkdirp(dir.split("/"));
+    return mkdirp(dir.split(path.sep));
   }
 
   return dir.reduce((created, nextPart) => {
