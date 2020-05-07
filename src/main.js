@@ -295,7 +295,7 @@ async function createSizes(paths) {
   const sizes = smallestSize > meta.width ? [meta.width] : options.sizes;
 
   return (
-    await Promise.all(sizes.map(size => resize(size, paths, options, meta)))
+    await Promise.all(sizes.map(size => resize(size, paths, meta)))
   ).filter(Boolean);
 }
 
