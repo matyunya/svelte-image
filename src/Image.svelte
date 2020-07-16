@@ -3,8 +3,8 @@
 
   export let c = ""; // deprecated
   export let alt = "";
-  export let width = "";
-  export let height = "";
+  export let width = null;
+  export let height = null;
   export let src = "";
   export let srcset = "";
   export let srcsetWebp = "";
@@ -22,7 +22,7 @@
   let loaded = !lazy;
 
   function load(img) {
-    img.onload = () => loaded = true;
+    img.onload = () => (loaded = true);
   }
 </script>
 
@@ -46,7 +46,8 @@
     transition: opacity 0.5s ease;
     transition-delay: 0.7s;
   }
-   .main {
+
+  .main {
     opacity: 0;
     transition: opacity 0.5s ease;
     transition-delay: 0.7s;
@@ -55,39 +56,36 @@
   .loaded .placeholder {
     opacity: 0;
   }
+
   .loaded .main {
     opacity: 1;
   }
 </style>
 
 <Waypoint
-  class={wrapperClass}
-  style="min-height: 100px; width: 100%"
+  class="{wrapperClass}"
+  style="min-height: 100px; width: 100%;"
   once
   {threshold}
-  disabled={!lazy}>
+  disabled="{!lazy}"
+>
   <div class:loaded style="position: relative; width: 100%;">
-    <div style="position: relative; overflow: hidden">
-      <div style="width:100%;padding-bottom:{ratio};" />
-      <img
-        class="placeholder {placeholderClass}"
-        {src}
-        {alt}
-      >
+    <div style="position: relative; overflow: hidden;">
+      <div style="width:100%;padding-bottom:{ratio};"></div>
+      <img class="placeholder {placeholderClass}" {src} {alt} />
       <picture>
-        <source type="image/webp" srcset={srcsetWebp}>
-        <source srcset={srcset}>
+        <source type="image/webp" srcset="{srcsetWebp}" {sizes} />
+        <source {srcset} {sizes} />
         <img
+          {src}
           use:load
           class="main {c} {className}"
           class:blur
           {alt}
-          {srcset}
           {width}
           {height}
-          {sizes}
-        >
-    </picture>
+        />
+      </picture>
     </div>
   </div>
 </Waypoint>
