@@ -59,11 +59,11 @@ let options = {
   optimizeRemote: true,
 };
 
-async function downloadImage (url, folder = '.') {
-  const { headers } = await axios.head(url)
+async function downloadImage(url, folder = '.') {
+  const { headers } = await axios.head(url);
 
-  const [type, ext] = headers['content-type'].split('/')
-  if (type !== 'image') return null
+  const [type, ext] = headers['content-type'].split('/');
+  if (type !== 'image') return null;
 
   const hash = crypto.createHash('sha1').update(url).digest('hex');
   const filename = `${hash}.${ext}`;
@@ -78,8 +78,8 @@ async function downloadImage (url, folder = '.') {
   response.data.pipe(writer);
 
   return new Promise((resolve, reject) => {
-    writer.on('finish', () => resolve(filename))
-    writer.on('error', reject)
+    writer.on('finish', () => resolve(filename));
+    writer.on('error', reject);
   })
 }
 
@@ -238,12 +238,17 @@ async function getProcessingPathsForNode(node) {
   // resolve imported path
   // refactor externals
 
-  let removedDomainSlash
+  let removedDomainSlash;
   if (IS_EXTERNAL.test(value.data)) {
     if (!options.optimizeRemote) {
       return willNotProcess(`The \`src\` is external: ${value.data}`);
     } else {
-      removedDomainSlash = await downloadImage(value.data, options.publicDir);
+      removedDomainSlash = await downloadImage(value.data, options.publicDir).catch(e => {
+        console.error(e.toString());
+
+        return null;
+      });
+
       if (removedDomainSlash === null) {
         return willNotProcess(`The url of is not an image: ${value.data}`);
       }
