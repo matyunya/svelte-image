@@ -60,16 +60,20 @@ let options = {
 };
 
 async function downloadImage(url, folder = '.') {
+  const { headers } = await axios.head(url);
   const hash = crypto.createHash('sha1').update(url).digest('hex');
+  const existing = fs.readdirSync(folder).find(e => e.startsWith(hash));
+  if (existing) {
+    return existing;
+  }
+
+  const [type, ext] = headers['content-type'].split('/');
+  if (type !== 'image') return null;
+
   const filename = `${hash}.${ext}`;
   const saveTo = path.resolve(folder, filename);
 
   if (fs.existsSync(path)) return filename;
-
-  const { headers } = await axios.head(url);
-
-  const [type, ext] = headers['content-type'].split('/');
-  if (type !== 'image') return null;
 
   const writer = fs.createWriteStream(saveTo);
   const response = await axios({
