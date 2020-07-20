@@ -60,14 +60,16 @@ let options = {
 };
 
 async function downloadImage(url, folder = '.') {
+  const hash = crypto.createHash('sha1').update(url).digest('hex');
+  const filename = `${hash}.${ext}`;
+  const saveTo = path.resolve(folder, filename);
+
+  if (fs.existsSync(path)) return filename;
+
   const { headers } = await axios.head(url);
 
   const [type, ext] = headers['content-type'].split('/');
   if (type !== 'image') return null;
-
-  const hash = crypto.createHash('sha1').update(url).digest('hex');
-  const filename = `${hash}.${ext}`;
-  const saveTo = path.resolve(folder, filename);
 
   const writer = fs.createWriteStream(saveTo);
   const response = await axios({
@@ -80,7 +82,7 @@ async function downloadImage(url, folder = '.') {
   return new Promise((resolve, reject) => {
     writer.on('finish', () => resolve(filename));
     writer.on('error', reject);
-  })
+  });
 }
 
 function getPathsObject(nodeSrc) {
