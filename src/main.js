@@ -351,7 +351,7 @@ function mkdirp(dir) {
     if (fs.existsSync(dir)) {
       return dir;
     }
-    return mkdirp(dir.split("/"));
+    return mkdirp(dir.split(path.sep));
   }
 
   return dir.reduce((created, nextPart) => {
@@ -363,11 +363,13 @@ function mkdirp(dir) {
   }, "");
 }
 
+const pathSepPattern = new RegExp('\\' + path.sep, 'g');
+
 const srcsetLine = options => (s, i) =>
-  `${s.filename} ${options.breakpoints[i]}w`;
+  `${s.filename.replace(pathSepPattern, '/')} ${options.breakpoints[i]}w`;
 
 const srcsetLineWebp = options => (s, i) =>
-  `${s.filename} ${options.breakpoints[i]}w`
+  `${s.filename.replace(pathSepPattern, '/')} ${options.breakpoints[i]}w`
     .replace("jpg", "webp")
     .replace("png", "webp")
     .replace("jpeg", "webp");
