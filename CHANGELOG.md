@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 
 
+## 0.2.7 - 2020-9-1 UTC
+
+
+
 ## 0.2.6 - 2020-7-20 UTC
 
 
