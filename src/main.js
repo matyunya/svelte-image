@@ -3,8 +3,8 @@ const sharp = require("sharp");
 const path = require("path");
 const util = require("util");
 const fs = require("fs");
-const crypto = require('crypto');
-const axios = require('axios');
+const crypto = require("crypto");
+const axios = require("axios");
 
 let options = {
   optimizeAll: true, // optimize all images discovered in img tags
@@ -43,7 +43,7 @@ let options = {
   webpOptions: {
     quality: 75,
     lossless: false,
-    force: true
+    force: true,
   },
 
   webp: true,
@@ -52,23 +52,24 @@ let options = {
   trace: {
     background: "#fff",
     color: "#002fa7",
-    threshold: 120
+    threshold: 120,
   },
 
   // Wheter to download and optimize remote images loaded from a url
   optimizeRemote: true,
 };
 
-async function downloadImage(url, folder = '.') {
-  const { headers } = await axios.head(url);
-  const hash = crypto.createHash('sha1').update(url).digest('hex');
-  const existing = fs.readdirSync(folder).find(e => e.startsWith(hash));
+async function downloadImage(url, folder = ".") {
+  const hash = crypto.createHash("sha1").update(url).digest("hex");
+  const existing = fs.readdirSync(folder).find((e) => e.startsWith(hash));
   if (existing) {
     return existing;
   }
 
-  const [type, ext] = headers['content-type'].split('/');
-  if (type !== 'image') return null;
+  const { headers } = await axios.head(url);
+
+  const [type, ext] = headers["content-type"].split("/");
+  if (type !== "image") return null;
 
   const filename = `${hash}.${ext}`;
   const saveTo = path.resolve(folder, filename);
@@ -78,14 +79,14 @@ async function downloadImage(url, folder = '.') {
   const writer = fs.createWriteStream(saveTo);
   const response = await axios({
     url,
-    method: 'GET',
-    responseType: 'stream'
+    method: "GET",
+    responseType: "stream",
   });
   response.data.pipe(writer);
 
   return new Promise((resolve, reject) => {
-    writer.on('finish', () => resolve(filename));
-    writer.on('error', reject);
+    writer.on("finish", () => resolve(filename));
+    writer.on("error", reject);
   });
 }
 
@@ -102,14 +103,14 @@ function getPathsObject(nodeSrc) {
     outDir,
     outPath: path.join(outDir, filename),
     outUrl,
-    getResizePaths: size => {
+    getResizePaths: (size) => {
       const filenameWithSize = getFilenameWithSize(inPath, size);
       return {
         outPath: path.join(outDir, filenameWithSize),
         outUrl: path.join(path.dirname(outUrl), filenameWithSize),
-        outPathWebp: path.join(outDir, getWebpFilenameWithSize(inPath, size))
+        outPathWebp: path.join(outDir, getWebpFilenameWithSize(inPath, size)),
       };
-    }
+    },
   };
 }
 
@@ -120,19 +121,17 @@ async function getBase64(pathname, inlined = false) {
     size = (await sharp(pathname).metadata()).size;
   }
 
-  const s = await sharp(pathname)
-    .resize(size)
-    .toBuffer();
+  const s = await sharp(pathname).resize(size).toBuffer();
 
   return "data:image/png;base64," + s.toString("base64");
 }
 
-const optimizeSVG = svg => {
+const optimizeSVG = (svg) => {
   const svgo = require(`svgo`);
   const res = new svgo({
     multipass: true,
     floatPrecision: 0,
-    datauri: "base64"
+    datauri: "base64",
   });
 
   return res.optimize(svg).then(({ data }) => data);
@@ -152,7 +151,7 @@ async function getTrace(pathname) {
 }
 
 function getProp(node, attr) {
-  const prop = (node.attributes || []).find(a => a.name === attr);
+  const prop = (node.attributes || []).find((a) => a.name === attr);
   return prop ? prop.value : undefined;
 }
 
@@ -182,20 +181,15 @@ function fileHasCorrectExtension(filename, extensions) {
   return extensions.length === 0
     ? true
     : extensions
-        .map(x => x.toLowerCase())
-        .includes(
-          filename
-            .split(".")
-            .pop()
-            .toLowerCase()
-        );
+        .map((x) => x.toLowerCase())
+        .includes(filename.split(".").pop().toLowerCase());
 }
 
 function willNotProcess(reason) {
   return {
     willNotProcess: true,
     reason,
-    paths: undefined
+    paths: undefined,
   };
 }
 
@@ -249,7 +243,10 @@ async function getProcessingPathsForNode(node) {
     if (!options.optimizeRemote) {
       return willNotProcess(`The \`src\` is external: ${value.data}`);
     } else {
-      removedDomainSlash = await downloadImage(value.data, options.publicDir).catch(e => {
+      removedDomainSlash = await downloadImage(
+        value.data,
+        options.publicDir
+      ).catch((e) => {
         console.error(e.toString());
 
         return null;
@@ -296,7 +293,7 @@ function insert(content, value, start, end, offset) {
   return {
     content:
       content.substr(0, start + offset) + value + content.substr(end + offset),
-    offset: offset + value.length - (end - start)
+    offset: offset + value.length - (end - start),
   };
 }
 
@@ -306,7 +303,7 @@ async function createSizes(paths) {
   const sizes = smallestSize > meta.width ? [meta.width] : options.sizes;
 
   return (
-    await Promise.all(sizes.map(size => resize(size, paths, meta)))
+    await Promise.all(sizes.map((size) => resize(size, paths, meta)))
   ).filter(Boolean);
 }
 
@@ -331,7 +328,7 @@ async function resize(size, paths, meta = null) {
     return {
       ...meta,
       filename: outUrl,
-      size
+      size,
     };
   }
 
@@ -342,12 +339,12 @@ async function resize(size, paths, meta = null) {
       .jpeg({
         quality: options.quality,
         progressive: false,
-        force: false
+        force: false,
       })
       .png({ compressionLevel: options.compressionLevel, force: false })
       .toFile(outPath)),
     size,
-    filename: outUrl
+    filename: outUrl,
   };
 }
 
@@ -369,13 +366,13 @@ function mkdirp(dir) {
   }, "");
 }
 
-const pathSepPattern = new RegExp('\\' + path.sep, 'g');
+const pathSepPattern = new RegExp("\\" + path.sep, "g");
 
-const srcsetLine = options => (s, i) =>
-  `${s.filename.replace(pathSepPattern, '/')} ${options.breakpoints[i]}w`;
+const srcsetLine = (options) => (s, i) =>
+  `${s.filename.replace(pathSepPattern, "/")} ${options.breakpoints[i]}w`;
 
-const srcsetLineWebp = options => (s, i) =>
-  `${s.filename.replace(pathSepPattern, '/')} ${options.breakpoints[i]}w`
+const srcsetLineWebp = (options) => (s, i) =>
+  `${s.filename.replace(pathSepPattern, "/")} ${options.breakpoints[i]}w`
     .replace("jpg", "webp")
     .replace("png", "webp")
     .replace("jpeg", "webp");
@@ -383,7 +380,7 @@ const srcsetLineWebp = options => (s, i) =>
 function getSrcset(sizes, lineFn = srcsetLine, tag = "srcset") {
   const s = Array.isArray(sizes) ? sizes : [sizes];
   const srcSetValue = s
-    .filter(f => f)
+    .filter((f) => f)
     .map(lineFn(options))
     .join();
 
@@ -393,7 +390,9 @@ function getSrcset(sizes, lineFn = srcsetLine, tag = "srcset") {
 async function replaceInComponent(edited, node) {
   const { content, offset } = await edited;
 
-  const { paths, willNotProcess, reason } = await getProcessingPathsForNode(node);
+  const { paths, willNotProcess, reason } = await getProcessingPathsForNode(
+    node
+  );
 
   if (willNotProcess) {
     console.error(reason);
@@ -486,7 +485,7 @@ async function replaceImages(content) {
   }
 
   svelte.walk(ast, {
-    enter: node => {
+    enter: (node) => {
       if (!["Element", "Fragment", "InlineComponent"].includes(node.type)) {
         return;
       }
@@ -498,14 +497,14 @@ async function replaceImages(content) {
 
       if (node.name !== options.tagName) return;
       imageNodes.push(node);
-    }
+    },
   });
 
   if (!imageNodes.length) return content;
 
   const beforeProcessed = {
     content,
-    offset: 0
+    offset: 0,
   };
   const processed = await imageNodes.reduce(async (edited, node) => {
     if (node.name === "img") {
@@ -523,18 +522,18 @@ async function replaceImages(content) {
 function getPreprocessor(opts = {}) {
   options = {
     ...options,
-    ...opts
+    ...opts,
   };
 
   return {
     markup: async ({ content }) => ({
-      code: await replaceImages(content)
-    })
+      code: await replaceImages(content),
+    }),
   };
 }
 
 module.exports = {
   defaults: options,
   replaceImages,
-  getPreprocessor
+  getPreprocessor,
 };
