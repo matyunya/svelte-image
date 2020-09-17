@@ -60,7 +60,10 @@ let options = {
 };
 
 async function downloadImage(url, folder = ".") {
-  const hash = crypto.createHash("sha1").update(url).digest("hex");
+  const hash = crypto
+    .createHash("sha1")
+    .update(url)
+    .digest("hex");
   const existing = fs.readdirSync(folder).find((e) => e.startsWith(hash));
   if (existing) {
     return existing;
@@ -115,15 +118,21 @@ function getPathsObject(nodeSrc) {
 }
 
 async function getBase64(pathname, inlined = false) {
-  let size = 64;
+  try {
+    let size = 64;
 
-  if (inlined) {
-    size = (await sharp(pathname).metadata()).size;
+    if (inlined) {
+      size = (await sharp(pathname).metadata()).size;
+    }
+
+    const s = await sharp(pathname)
+      .resize(size)
+      .toBuffer();
+
+    return "data:image/png;base64," + s.toString("base64");
+  } catch (e) {
+    console.log(e);
   }
-
-  const s = await sharp(pathname).resize(size).toBuffer();
-
-  return "data:image/png;base64," + s.toString("base64");
 }
 
 const optimizeSVG = (svg) => {
@@ -138,16 +147,20 @@ const optimizeSVG = (svg) => {
 };
 
 async function getTrace(pathname) {
-  const potrace = require("potrace");
-  const trace = util.promisify(potrace.trace);
+  try {
+    const potrace = require("potrace");
+    const trace = util.promisify(potrace.trace);
 
-  const s = await sharp(pathname)
-    .resize(options.trace.size || 500)
-    .toBuffer();
+    const s = await sharp(pathname)
+      .resize(options.trace.size || 500)
+      .toBuffer();
 
-  const res = await trace(s, options.trace);
+    const res = await trace(s, options.trace);
 
-  return optimizeSVG(res);
+    return await optimizeSVG(res);
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 function getProp(node, attr) {
@@ -181,8 +194,13 @@ function fileHasCorrectExtension(filename, extensions) {
   return extensions.length === 0
     ? true
     : extensions
-        .map((x) => x.toLowerCase())
-        .includes(filename.split(".").pop().toLowerCase());
+      .map((x) => x.toLowerCase())
+      .includes(
+        filename
+          .split(".")
+          .pop()
+          .toLowerCase()
+      );
 }
 
 function willNotProcess(reason) {
@@ -216,8 +234,7 @@ async function getProcessingPathsForNode(node) {
     !fileHasCorrectExtension(value.data, options.imgTagExtensions)
   ) {
     return willNotProcess(
-      `The <img> tag was passed a file (${
-        value.data
+      `The <img> tag was passed a file (${value.data
       }) whose extension is not one of ${options.imgTagExtensions.join(", ")}`
     );
   }
@@ -226,8 +243,7 @@ async function getProcessingPathsForNode(node) {
     !fileHasCorrectExtension(value.data, options.componentExtensions)
   ) {
     return willNotProcess(
-      `The ${options.tagName} component was passed a file (${
-        value.data
+      `The ${options.tagName} component was passed a file (${value.data
       }) whose extension is not one of ${options.componentExtensions.join(
         ", "
       )}`
@@ -290,6 +306,10 @@ function ensureOutDirExists(outDir) {
 }
 
 function insert(content, value, start, end, offset) {
+  if (!value) {
+    return { content, offset };
+  }
+
   return {
     content:
       content.substr(0, start + offset) + value + content.substr(end + offset),
@@ -302,9 +322,9 @@ async function createSizes(paths) {
   const meta = await sharp(paths.inPath).metadata();
   const sizes = smallestSize > meta.width ? [meta.width] : options.sizes;
 
-  return (
-    await Promise.all(sizes.map((size) => resize(size, paths, meta)))
-  ).filter(Boolean);
+  return (await Promise.all(
+    sizes.map((size) => resize(size, paths, meta))
+  )).filter(Boolean);
 }
 
 async function resize(size, paths, meta = null) {
@@ -507,10 +527,16 @@ async function replaceImages(content) {
     offset: 0,
   };
   const processed = await imageNodes.reduce(async (edited, node) => {
-    if (node.name === "img") {
-      return replaceInImg(edited, node);
+    try {
+      if (node.name === "img") {
+        return replaceInImg(edited, node);
+      }
+      return await replaceInComponent(edited, node);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      return edited;
     }
-    return replaceInComponent(edited, node);
   }, beforeProcessed);
 
   return processed.content;

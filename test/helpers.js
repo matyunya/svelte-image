@@ -1,7 +1,7 @@
-const fs = require('fs')
-const path = require('path')
+const fs = require("fs");
+const path = require("path");
 const targetFolder = path.join(process.cwd(), "static");
-const getPreprocessor = require('../src/index')
+const getPreprocessor = require("../src/index");
 
 /**
  * Test helper to populate files into the expected directory and will use files
@@ -35,12 +35,12 @@ const getPreprocessor = require('../src/index')
 function populateFiles(lookup = {}) {
   if (!fs.existsSync(targetFolder)) fs.mkdirSync(targetFolder);
 
-  Object.keys(lookup).forEach(newPath => {
+  Object.keys(lookup).forEach((newPath) => {
     const buffer = fs.readFileSync(path.join("./dev/static", lookup[newPath]));
     const newFileLocation = path.join(targetFolder, newPath);
     const newFileDir = path.dirname(newFileLocation);
     fs.mkdirSync(newFileDir, {
-      recursive: true
+      recursive: true,
     });
     fs.writeFileSync(newFileLocation, buffer);
   });
@@ -54,10 +54,13 @@ function cleanFiles() {
  * Convenience function to get directly at the main thing we will be testing
  * @param {*} options Same as the options you'd pass to getPreprocessor
  */
-const getReplaceImages = (options) => (str) => getPreprocessor(options).markup({content:str}).then((obj) => obj.code)
+const getReplaceImages = (options) => (str) =>
+  getPreprocessor(options)
+    .markup({ content: str })
+    .then((obj) => obj.code);
 
 module.exports = {
   cleanFiles,
   populateFiles,
-  getReplaceImages
-}
+  getReplaceImages,
+};
