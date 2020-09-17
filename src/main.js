@@ -60,10 +60,7 @@ let options = {
 };
 
 async function downloadImage(url, folder = ".") {
-  const hash = crypto
-    .createHash("sha1")
-    .update(url)
-    .digest("hex");
+  const hash = crypto.createHash("sha1").update(url).digest("hex");
   const existing = fs.readdirSync(folder).find((e) => e.startsWith(hash));
   if (existing) {
     return existing;
@@ -125,9 +122,7 @@ async function getBase64(pathname, inlined = false) {
       size = (await sharp(pathname).metadata()).size;
     }
 
-    const s = await sharp(pathname)
-      .resize(size)
-      .toBuffer();
+    const s = await sharp(pathname).resize(size).toBuffer();
 
     return "data:image/png;base64," + s.toString("base64");
   } catch (e) {
@@ -194,13 +189,8 @@ function fileHasCorrectExtension(filename, extensions) {
   return extensions.length === 0
     ? true
     : extensions
-      .map((x) => x.toLowerCase())
-      .includes(
-        filename
-          .split(".")
-          .pop()
-          .toLowerCase()
-      );
+        .map((x) => x.toLowerCase())
+        .includes(filename.split(".").pop().toLowerCase());
 }
 
 function willNotProcess(reason) {
@@ -234,7 +224,8 @@ async function getProcessingPathsForNode(node) {
     !fileHasCorrectExtension(value.data, options.imgTagExtensions)
   ) {
     return willNotProcess(
-      `The <img> tag was passed a file (${value.data
+      `The <img> tag was passed a file (${
+        value.data
       }) whose extension is not one of ${options.imgTagExtensions.join(", ")}`
     );
   }
@@ -243,7 +234,8 @@ async function getProcessingPathsForNode(node) {
     !fileHasCorrectExtension(value.data, options.componentExtensions)
   ) {
     return willNotProcess(
-      `The ${options.tagName} component was passed a file (${value.data
+      `The ${options.tagName} component was passed a file (${
+        value.data
       }) whose extension is not one of ${options.componentExtensions.join(
         ", "
       )}`
@@ -322,9 +314,9 @@ async function createSizes(paths) {
   const meta = await sharp(paths.inPath).metadata();
   const sizes = smallestSize > meta.width ? [meta.width] : options.sizes;
 
-  return (await Promise.all(
-    sizes.map((size) => resize(size, paths, meta))
-  )).filter(Boolean);
+  return (
+    await Promise.all(sizes.map((size) => resize(size, paths, meta)))
+  ).filter(Boolean);
 }
 
 async function resize(size, paths, meta = null) {
@@ -424,6 +416,11 @@ async function replaceInComponent(edited, node) {
     options.placeholder === "blur"
       ? await getBase64(paths.inPath)
       : await getTrace(paths.inPath);
+
+  if (!base64) {
+    console.error("Could not generate placeholder");
+    return { content, offset };
+  }
 
   const [{ start, end }] = getSrc(node);
 
