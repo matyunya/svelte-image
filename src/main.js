@@ -476,7 +476,7 @@ async function replaceImages(content) {
   let ast;
   const imageNodes = [];
 
-  if (!content.includes("<img") && !content.includes("<Image")) return content;
+  if (!content.includes("<img") && !content.includes(`<${options.tagName}`)) return content;
 
   try {
     ast = svelte.parse(content);
