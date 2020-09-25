@@ -11,6 +11,7 @@
   export let ratio = "100%";
   export let blur = false;
   export let sizes = "(max-width: 1000px) 100vw, 1000px";
+  export let offset = 0;
   export let threshold = 1.0;
   export let lazy = true;
   export let wrapperClass = "";
@@ -67,6 +68,7 @@
   style="min-height: 100px; width: 100%;"
   once
   {threshold}
+  {offset}
   disabled="{!lazy}"
 >
   <div class:loaded style="position: relative; width: 100%;">
