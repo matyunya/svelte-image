@@ -5,6 +5,7 @@ const util = require("util");
 const fs = require("fs");
 const crypto = require("crypto");
 const axios = require("axios");
+const blurhash = require('blurhash');
 
 let options = {
   optimizeAll: true, // optimize all images discovered in img tags
@@ -387,6 +388,29 @@ function getSrcset(sizes, lineFn = srcsetLine, tag = "srcset") {
   return ` ${tag}=\'${srcSetValue}\' `;
 }
 
+async function getUint8ClampedArray(pathname) {
+  const img = await sharp(pathname);
+  const meta = await img.metadata();
+  const width = 100;
+  const height = Math.floor(meta.height * (width / meta.width));
+
+  return new Promise((resolve, reject) => {
+    img.raw().ensureAlpha().resize(width, height).toBuffer((err, buffer, { width, height }) => {
+      if (err) {
+        return reject(err);
+      }
+
+      return resolve({ data: new Uint8ClampedArray(buffer), width, height });
+    });
+  });
+
+  // console.log(resized);
+  // return resized;
+  // console.log(resized, typeof resized);
+  // const s = await resized.toBuffer();
+  // return { width, height, data: Uint8ClampedArray.from(s) };;
+}
+
 async function replaceInComponent(edited, node) {
   const { content, offset } = await edited;
 
@@ -404,6 +428,9 @@ async function replaceInComponent(edited, node) {
     options.placeholder === "blur"
       ? await getBase64(paths.inPath)
       : await getTrace(paths.inPath);
+  
+  const imgdata = await getUint8ClampedArray(paths.inPath);
+  const hash = blurhash.encode(imgdata.data, imgdata.width, imgdata.height, 3, 3);
 
   const [{ start, end }] = getSrc(node);
 
@@ -425,15 +452,32 @@ async function replaceInComponent(edited, node) {
     withSrcset.offset
   );
 
-  if (!options.webp) return withRatio;
-
-  return insert(
+  const withBlurhash = insert(
     withRatio.content,
-    getSrcset(sizes, srcsetLineWebp, "srcsetWebp"),
+    ` blurhash=\'${hash}\' `,
     end + 1,
     end + 2,
     withRatio.offset
+  )
+
+  // if (!options.webp) return withRatio;
+  if (!options.webp) return withBlurhash;
+
+  return insert(
+    withBlurhash.content,
+    getSrcset(sizes, srcsetLineWebp, "srcsetWebp"),
+    end + 1,
+    end + 2,
+    withBlurhash.offset
   );
+
+  // return insert(
+  //   withRatio.content,
+  //   getSrcset(sizes, srcsetLineWebp, "srcsetWebp"),
+  //   end + 1,
+  //   end + 2,
+  //   withRatio.offset
+  // );
 }
 
 async function optimize(paths) {

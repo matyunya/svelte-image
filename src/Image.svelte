@@ -16,6 +16,7 @@
   export let lazy = true;
   export let wrapperClass = "";
   export let placeholderClass = "";
+  export let blurhash = null;
 
   let className = "";
   export { className as class };
@@ -63,6 +64,10 @@
   }
 </style>
 
+<!-- <div>
+  Image here
+</div> -->
+
 <Waypoint
   class="{wrapperClass}"
   style="min-height: 100px; width: 100%;"
@@ -71,6 +76,9 @@
   {offset}
   disabled="{!lazy}"
 >
+  {#if blurhash}
+    <div>{blurhash}</div>
+  {/if}
   <div class:loaded style="position: relative; width: 100%;">
     <div style="position: relative; overflow: hidden;">
       <div style="width:100%;padding-bottom:{ratio};"></div>
