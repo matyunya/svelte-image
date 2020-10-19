@@ -5,7 +5,7 @@
 </script>
 
 <main class="max-w-6xl mx-auto">
-  <!-- <h1 class="flex items-center">
+  <h1 class="flex items-center">
     Svelte image
     <a href="https://github.com/matyunya/svelte-image" class="pl-8">
       <img src="/github.png" alt="Github Smelte" width="64" height="64" />
@@ -23,7 +23,7 @@
       href="https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images">
       srcset
     </a>
-    and a beautiful trace or blur base64 placeholder like this
+    and a beautiful trace, blur, or blurhash placeholder like this
   </p>
 
     <Code class="my-4" code={`<img
@@ -41,16 +41,16 @@
     If you use the normal img tag, your image will be optimized and if its size
     is below certain threshold it will be inlined as base64 &mdash; like the Github logo
     above. (External images will not be optimized.)
-  </p> -->
+  </p>
 
-  <!-- <Image alt="fuji" src="fuji.jpg" /> -->
-  <!-- <Image alt="doggo" src="animals.jpg" /> -->
-  <!-- <Image alt="painting 1" src="1.jpg" /> -->
+  <Image alt="fuji" src="fuji.jpg" />
+  <Image alt="doggo" src="animals.jpg" />
+  <Image alt="painting 1" src="1.jpg" />
   <Image alt="painting 2" src="2.jpg" />
-  <!-- <Image alt="painting 3" src="3.jpg" /> -->
-  <!-- <Image alt="painting 4" src="4.png" /> -->
-  <!-- <Image alt="painting 5" src="5.jpg" /> -->
-  <!-- <Image alt="painting 6" src="6.jpg" /> -->
-  <!-- <Image alt="painting 7" src="7.jpg" /> -->
-  <!-- <Image alt="painting 8" src="8.jpg" /> -->
+  <Image alt="painting 3" src="3.jpg" />
+  <Image alt="painting 4" src="4.png" />
+  <Image alt="painting 5" src="5.jpg" />
+  <Image alt="painting 6" src="6.jpg" />
+  <Image alt="painting 7" src="7.jpg" />
+  <Image alt="painting 8" src="8.jpg" />
 </main>

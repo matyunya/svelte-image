@@ -38,7 +38,7 @@ let options = {
 
   publicDir: "./static/",
 
-  placeholder: "trace", // or "blur",
+  placeholder: "trace", // or "blur", or "blurhash",
 
   // WebP options [sharp docs](https://sharp.pixelplumbing.com/en/stable/api-output/#webp)
   webpOptions: {
@@ -388,10 +388,10 @@ function getSrcset(sizes, lineFn = srcsetLine, tag = "srcset") {
   return ` ${tag}=\'${srcSetValue}\' `;
 }
 
-async function getUint8ClampedArray(pathname) {
+async function getImageData(pathname) {
   const img = await sharp(pathname);
   const meta = await img.metadata();
-  const width = 100;
+  const width = 64;
   const height = Math.floor(meta.height * (width / meta.width));
 
   return new Promise((resolve, reject) => {
@@ -403,12 +403,6 @@ async function getUint8ClampedArray(pathname) {
       return resolve({ data: new Uint8ClampedArray(buffer), width, height });
     });
   });
-
-  // console.log(resized);
-  // return resized;
-  // console.log(resized, typeof resized);
-  // const s = await resized.toBuffer();
-  // return { width, height, data: Uint8ClampedArray.from(s) };;
 }
 
 async function replaceInComponent(edited, node) {
@@ -424,60 +418,57 @@ async function replaceInComponent(edited, node) {
   }
   const sizes = await createSizes(paths);
 
-  const base64 =
-    options.placeholder === "blur"
-      ? await getBase64(paths.inPath)
-      : await getTrace(paths.inPath);
-  
-  const imgdata = await getUint8ClampedArray(paths.inPath);
-  const hash = blurhash.encode(imgdata.data, imgdata.width, imgdata.height, 3, 3);
-
   const [{ start, end }] = getSrc(node);
 
-  const withBase64 = insert(content, base64, start, end, offset);
+  let replaced;
 
-  const withSrcset = insert(
-    withBase64.content,
+  const base64 =
+    options.placeholder === "blur" || options.placeholder === "blurhash"
+      ? await getBase64(paths.inPath)
+      : await getTrace(paths.inPath);
+
+  replaced = insert(content, base64, start, end, offset);
+
+  replaced = insert(
+    replaced.content,
     getSrcset(sizes),
     end + 1,
     end + 2,
-    withBase64.offset
+    replaced.offset
   );
 
-  const withRatio = insert(
-    withSrcset.content,
+  replaced = insert(
+    replaced.content,
     ` ratio=\'${(1 / (sizes[0].width / sizes[0].height)) * 100}%\' `,
     end + 1,
     end + 2,
-    withSrcset.offset
+    replaced.offset
   );
 
-  const withBlurhash = insert(
-    withRatio.content,
-    ` blurhash=\'${hash}\' `,
-    end + 1,
-    end + 2,
-    withRatio.offset
-  )
+  if (options.placeholder === "blurhash") {
+    const imgdata = await getImageData(paths.inPath);
+    const hash = blurhash.encode(imgdata.data, imgdata.width, imgdata.height, 4, 3);
 
-  // if (!options.webp) return withRatio;
-  if (!options.webp) return withBlurhash;
+    replaced = insert(
+      replaced.content,
+      ` blurhash=\'{\`${hash}\`}\' blurhashSize=\'{{width: ${imgdata.width}, height: ${imgdata.height}}}\' `,
+      end + 1,
+      end + 2,
+      replaced.offset
+    );
+  }
 
-  return insert(
-    withBlurhash.content,
-    getSrcset(sizes, srcsetLineWebp, "srcsetWebp"),
-    end + 1,
-    end + 2,
-    withBlurhash.offset
-  );
+  if (options.webp) {
+    replaced = insert(
+      replaced.content,
+      getSrcset(sizes, srcsetLineWebp, "srcsetWebp"),
+      end + 1,
+      end + 2,
+      replaced.offset
+    );
+  };
 
-  // return insert(
-  //   withRatio.content,
-  //   getSrcset(sizes, srcsetLineWebp, "srcsetWebp"),
-  //   end + 1,
-  //   end + 2,
-  //   withRatio.offset
-  // );
+  return replaced;
 }
 
 async function optimize(paths) {

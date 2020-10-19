@@ -99,7 +99,7 @@ export default {
         emitCss: true,
         preprocess: {
           ...image({
-            placeholder: "blur"
+            placeholder: "trace"
           })
         }
       }),
