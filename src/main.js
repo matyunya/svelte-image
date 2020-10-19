@@ -5,6 +5,7 @@ const util = require("util");
 const fs = require("fs");
 const crypto = require("crypto");
 const axios = require("axios");
+const blurhash = require('blurhash');
 
 let options = {
   optimizeAll: true, // optimize all images discovered in img tags
@@ -37,7 +38,7 @@ let options = {
 
   publicDir: "./static/",
 
-  placeholder: "trace", // or "blur",
+  placeholder: "trace", // or "blur", or "blurhash",
 
   // WebP options [sharp docs](https://sharp.pixelplumbing.com/en/stable/api-output/#webp)
   webpOptions: {
@@ -387,6 +388,23 @@ function getSrcset(sizes, lineFn = srcsetLine, tag = "srcset") {
   return ` ${tag}=\'${srcSetValue}\' `;
 }
 
+async function getImageData(pathname) {
+  const img = await sharp(pathname);
+  const meta = await img.metadata();
+  const width = 64;
+  const height = Math.floor(meta.height * (width / meta.width));
+
+  return new Promise((resolve, reject) => {
+    img.raw().ensureAlpha().resize(width, height).toBuffer((err, buffer, { width, height }) => {
+      if (err) {
+        return reject(err);
+      }
+
+      return resolve({ data: new Uint8ClampedArray(buffer), width, height });
+    });
+  });
+}
+
 async function replaceInComponent(edited, node) {
   const { content, offset } = await edited;
 
@@ -400,40 +418,57 @@ async function replaceInComponent(edited, node) {
   }
   const sizes = await createSizes(paths);
 
+  const [{ start, end }] = getSrc(node);
+
+  let replaced;
+
   const base64 =
-    options.placeholder === "blur"
+    options.placeholder === "blur" || options.placeholder === "blurhash"
       ? await getBase64(paths.inPath)
       : await getTrace(paths.inPath);
 
-  const [{ start, end }] = getSrc(node);
+  replaced = insert(content, base64, start, end, offset);
 
-  const withBase64 = insert(content, base64, start, end, offset);
-
-  const withSrcset = insert(
-    withBase64.content,
+  replaced = insert(
+    replaced.content,
     getSrcset(sizes),
     end + 1,
     end + 2,
-    withBase64.offset
+    replaced.offset
   );
 
-  const withRatio = insert(
-    withSrcset.content,
+  replaced = insert(
+    replaced.content,
     ` ratio=\'${(1 / (sizes[0].width / sizes[0].height)) * 100}%\' `,
     end + 1,
     end + 2,
-    withSrcset.offset
+    replaced.offset
   );
 
-  if (!options.webp) return withRatio;
+  if (options.placeholder === "blurhash") {
+    const imgdata = await getImageData(paths.inPath);
+    const hash = blurhash.encode(imgdata.data, imgdata.width, imgdata.height, 4, 3);
 
-  return insert(
-    withRatio.content,
-    getSrcset(sizes, srcsetLineWebp, "srcsetWebp"),
-    end + 1,
-    end + 2,
-    withRatio.offset
-  );
+    replaced = insert(
+      replaced.content,
+      ` blurhash=\'{\`${hash}\`}\' blurhashSize=\'{{width: ${imgdata.width}, height: ${imgdata.height}}}\' `,
+      end + 1,
+      end + 2,
+      replaced.offset
+    );
+  }
+
+  if (options.webp) {
+    replaced = insert(
+      replaced.content,
+      getSrcset(sizes, srcsetLineWebp, "srcsetWebp"),
+      end + 1,
+      end + 2,
+      replaced.offset
+    );
+  };
+
+  return replaced;
 }
 
 async function optimize(paths) {

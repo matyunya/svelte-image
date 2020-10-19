@@ -23,7 +23,7 @@
       href="https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images">
       srcset
     </a>
-    and a beautiful trace or blur base64 placeholder like this
+    and a beautiful trace, blur, or blurhash placeholder like this
   </p>
 
     <Code class="my-4" code={`<img
@@ -42,6 +42,7 @@
     is below certain threshold it will be inlined as base64 &mdash; like the Github logo
     above. (External images will not be optimized.)
   </p>
+
   <Image alt="fuji" src="fuji.jpg" />
   <Image alt="doggo" src="animals.jpg" />
   <Image alt="painting 1" src="1.jpg" />

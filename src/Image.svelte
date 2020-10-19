@@ -1,4 +1,5 @@
 <script>
+  import { decode } from 'blurhash';
   import Waypoint from "svelte-waypoint";
 
   export let c = ""; // deprecated
@@ -16,6 +17,8 @@
   export let lazy = true;
   export let wrapperClass = "";
   export let placeholderClass = "";
+  export let blurhash = null;
+  export let blurhashSize = null;
 
   let className = "";
   export { className as class };
@@ -25,10 +28,18 @@
   function load(img) {
     img.onload = () => (loaded = true);
   }
+
+  function decodeBlurhash(canvas) {
+    const pixels = decode(blurhash, blurhashSize.width, blurhashSize.height);
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.createImageData(blurhashSize.width, blurhashSize.height);
+    imageData.data.set(pixels);
+    ctx.putImageData(imageData, 0, 0);
+  }
 </script>
 
 <style>
-  img {
+  img, canvas {
     object-position: center;
     position: absolute;
     top: 0;
@@ -70,11 +81,15 @@
   {threshold}
   {offset}
   disabled="{!lazy}"
->
+>  
   <div class:loaded style="position: relative; width: 100%;">
     <div style="position: relative; overflow: hidden;">
       <div style="width:100%;padding-bottom:{ratio};"></div>
-      <img class="placeholder {placeholderClass}" {src} {alt} />
+      {#if blurhash}
+        <canvas class="placeholder" use:decodeBlurhash width={blurhashSize.width} height={blurhashSize.height} />
+      {:else}
+        <img class="placeholder {placeholderClass}" {src} {alt} />
+      {/if}
       <picture>
         <source type="image/webp" srcset="{srcsetWebp}" {sizes} />
         <source {srcset} {sizes} />
