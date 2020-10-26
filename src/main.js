@@ -39,6 +39,8 @@ let options = {
   publicDir: "./static/",
 
   placeholder: "trace", // or "blur", or "blurhash",
+  
+  placeholderSize: 64,
 
   // WebP options [sharp docs](https://sharp.pixelplumbing.com/en/stable/api-output/#webp)
   webpOptions: {
@@ -116,7 +118,7 @@ function getPathsObject(nodeSrc) {
 }
 
 async function getBase64(pathname, inlined = false) {
-  let size = 64;
+  let size = options.placeholderSize;
 
   if (inlined) {
     size = (await sharp(pathname).metadata()).size;
@@ -391,7 +393,7 @@ function getSrcset(sizes, lineFn = srcsetLine, tag = "srcset") {
 async function getImageData(pathname) {
   const img = await sharp(pathname);
   const meta = await img.metadata();
-  const width = 64;
+  const width = options.placeholderSize;
   const height = Math.floor(meta.height * (width / meta.width));
 
   return new Promise((resolve, reject) => {
