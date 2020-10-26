@@ -88,7 +88,7 @@
       {#if blurhash}
         <canvas class="placeholder" use:decodeBlurhash width={blurhashSize.width} height={blurhashSize.height} />
       {:else}
-        <img class="placeholder {placeholderClass}" {src} {alt} />
+        <img class="placeholder {placeholderClass}" class:blur {src} {alt} />
       {/if}
       <picture>
         <source type="image/webp" srcset="{srcsetWebp}" {sizes} />
@@ -97,7 +97,6 @@
           {src}
           use:load
           class="main {c} {className}"
-          class:blur
           {alt}
           {width}
           {height}
