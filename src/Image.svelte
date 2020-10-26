@@ -10,7 +10,7 @@
   export let srcset = "";
   export let srcsetWebp = "";
   export let ratio = "100%";
-  export let blur = false;
+  export let blur = true;
   export let sizes = "(max-width: 1000px) 100vw, 1000px";
   export let offset = 0;
   export let threshold = 1.0;
