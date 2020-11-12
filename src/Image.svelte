@@ -55,6 +55,8 @@
 
   .placeholder {
     opacity: 1;
+    width: 100%;
+    height: 100%;
     transition: opacity 1200ms ease-out;
     transition-delay: 0.4s;
   }
