@@ -49,22 +49,22 @@
   }
 
   .blur {
-    filter: blur(10px);
-    transition: opacity 0.4s ease, filter 0.5s ease;
+    filter: blur(15px);
+    transition: opacity 1200ms;
   }
 
   .placeholder {
     opacity: 1;
     width: 100%;
     height: 100%;
-    transition: opacity 0.5s ease;
-    transition-delay: 0.7s;
+    transition: opacity 1200ms ease-out;
+    transition-delay: 0.4s;
   }
 
   .main {
     opacity: 0;
-    transition: opacity 0.5s ease;
-    transition-delay: 0.7s;
+    transition: opacity 1200ms ease-out;
+    transition-delay: 0.4s;
   }
 
   .loaded .placeholder {
