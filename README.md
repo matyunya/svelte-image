@@ -58,8 +58,11 @@ Will generate
 
 ## Image path
 
-Please note that the library works only with relative paths in Sapper at the moment.
-`<Image src="images/fuji.jpg" />` works whereas `<Image src="/images/fuji.jpg" />` doesn't.
+Please note that the library works only with paths from root in Sapper at the moment.
+`<Image src="images/fuji.jpg" />` works the same as `<Image src="/images/fuji.jpg" />`.
+
+In reality, based on how Sapper moves the `static` folder into the root of your project,
+tchnically all image paths should probably start with a `/` to best represent actual paths.
 
 ### Svelte + Rollup
 
