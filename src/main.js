@@ -7,7 +7,7 @@ const crypto = require("crypto");
 const axios = require("axios");
 const blurhash = require('blurhash');
 
-let options = {
+const defaults = {
   optimizeAll: true, // optimize all images discovered in img tags
 
   // Case insensitive. Only files whose extension exist in this array will be
@@ -60,7 +60,40 @@ let options = {
 
   // Wheter to download and optimize remote images loaded from a url
   optimizeRemote: true,
+
+  //
+  // Declared image folder processing
+  //
+  // The options below are only useful if you'd like to process entire folders
+  // of images, regardless of whether or not they appear in any templates in
+  // your application (in addition to all the images that are found at build
+  // time). This is useful if you build dynamic strings to reference images you
+  // know should exist, but that cannot be determined at build time.
+
+  // Relative paths (starting from `/static`) of folders you'd like to process
+  // from top to bottom. This is a recursive operation, so all images that match
+  // the `processFoldersExtensions` array will be processed. For example, an
+  // array ['folder-a', 'folder-b'] will process all images in
+  // `<publicDir>/folder-a/` and `<publicDir>/folder-b`.
+  processFolders: [],
+
+  // When true, the folders in the options above will have all subfolders
+  // processed recursively as well.
+  processFoldersRecursively: false,
+
+  // Only files with these extensions will ever be processed when invoking
+  // `processFolders` above.
+  processFoldersExtensions: ["jpeg", "jpg", "png"],
+
+  // Add image sizes to this array to create different asset sizes for any image
+  // that is processed using `processFolders`
+  processFoldersSizes: false
 };
+
+/**
+ * @type {typeof defaults}
+ */
+let options = JSON.parse(JSON.stringify(defaults))
 
 async function downloadImage(url, folder = ".") {
   const hash = crypto.createHash("sha1").update(url).digest("hex");
@@ -481,11 +514,13 @@ async function optimize(paths) {
 
   ensureOutDirExists(paths.outDir);
 
-  await sharp(paths.inPath)
-    .jpeg({ quality: options.quality, progressive: false, force: false })
-    .webp({ quality: options.quality, lossless: true, force: false })
-    .png({ compressionLevel: options.compressionLevel, force: false })
-    .toFile(paths.outPath);
+  if (!fs.existsSync(paths.outPath)) {
+    await sharp(paths.inPath)
+      .jpeg({ quality: options.quality, progressive: false, force: false })
+      .webp({ quality: options.quality, lossless: true, force: false })
+      .png({ compressionLevel: options.compressionLevel, force: false })
+      .toFile(paths.outPath);
+  }
 
   return paths.outUrl;
 }
@@ -554,23 +589,89 @@ async function replaceImages(content) {
 }
 
 /**
- * @param {Partial<typeof options>} options
+ * @param {string} pathFromStatic
+ */
+async function processImage(pathFromStatic) {
+  const paths = getPathsObject(pathFromStatic);
+  await optimize(paths);
+  if (options.processFoldersSizes) {
+    await createSizes(paths);
+  }
+  return;
+}
+
+/**
+ * @param {string} folder (relative path from `publicDir`)
+ */
+function processFolder(folder) {
+  // get images
+  const files = fs.readdirSync(path.resolve(options.publicDir, folder));
+  const images = files.filter(file =>
+    options.processFoldersExtensions.includes(path.extname(file).substr(1))
+  );
+
+  // process
+  const processingImages = images
+    .map(filename => path.join(folder, filename))
+    .map(processImage);
+
+  // get folders and optionally recurse
+  let processingFolders = [];
+
+  if (options.processFoldersRecursively) {
+    const folders = files.filter(fileOrFolder =>
+      fs
+        .lstatSync(path.resolve(options.publicDir, folder, fileOrFolder))
+        .isDirectory()
+    );
+    processingFolders = folders.map(nestedFolder =>
+      processFolder(path.join(folder, nestedFolder))
+    );
+  }
+
+  return Promise.all(processingImages.concat(processingFolders));
+}
+
+function processFolders() {
+  if (options.processFolders.length === 0) return;
+
+  const inlineBelow = options.inlineBelow
+  options.inlineBelow = 0
+
+  const jobs = options.processFolders.map(processFolder);
+  return Promise.all(jobs)
+    .finally(() => (options.inlineBelow = inlineBelow));
+}
+
+/**
+ * @param {Partial<typeof options>} opts
  */
 function getPreprocessor(opts = {}) {
   options = {
     ...options,
-    ...opts,
+    ...opts
   };
 
+  let ran = false;
+  async function processFoldersOnce() {
+    if (ran) return;
+    ran = true;
+
+    await processFolders();
+  }
+
   return {
-    markup: async ({ content }) => ({
-      code: await replaceImages(content),
-    }),
+    markup: async ({ content }) => {
+      await processFoldersOnce();
+      return {
+        code: await replaceImages(content)
+      };
+    }
   };
 }
 
 module.exports = {
-  defaults: options,
+  defaults,
   replaceImages,
   getPreprocessor,
 };

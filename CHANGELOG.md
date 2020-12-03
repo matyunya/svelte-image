@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
-
+### Added
+- Optionally process entire folders of images, regardless of image references in
+  your svelte components
+### Changed
+- Documented actual behavior of "/" at the start of an image path
+- If an image is set to be optimized, but the destination (optimized) file
+  exists, it is skipped
 
 
 ## 0.2.7 - 2020-9-1 UTC

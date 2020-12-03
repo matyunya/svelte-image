@@ -58,8 +58,11 @@ Will generate
 
 ## Image path
 
-Please note that the library works only with relative paths in Sapper at the moment.
-`<Image src="images/fuji.jpg" />` works whereas `<Image src="/images/fuji.jpg" />` doesn't.
+Please note that the library works only with paths from root in Sapper at the moment.
+`<Image src="images/fuji.jpg" />` works the same as `<Image src="/images/fuji.jpg" />`.
+
+In reality, based on how Sapper moves the `static` folder into the root of your project,
+tchnically all image paths should probably start with a `/` to best represent actual paths.
 
 ### Svelte + Rollup
 
@@ -90,6 +93,7 @@ export default {
 ## Configuration and defaults
 
 Image accepts following configuration object:
+Inside your rollup config, `image` accepts following configuration object:
 
 ```js
 const defaults = {
@@ -99,7 +103,7 @@ const defaults = {
   // processed by the <img> tag (assuming `optimizeAll` above is true). Empty
   // the array to allow all extensions to be processed. However, only jpegs and
   // pngs are explicitly supported.
-  imgTagExtensions: ['jpg', 'jpeg', 'png'],
+  imgTagExtensions: ["jpg", "jpeg", "png"],
 
   // Same as the above, except that this array applies to the Image Component.
   // If the images passed to your image component are unknown, it might be a
@@ -124,6 +128,7 @@ const defaults = {
   // should be ./static for Sapper and ./public for plain Svelte projects
   publicDir: "./static/",
 
+
   placeholder: "trace", // or "blur",
 
   // WebP options [sharp docs](https://sharp.pixelplumbing.com/en/stable/api-output/#webp)
@@ -140,10 +145,38 @@ const defaults = {
     background: "#fff",
     color: "#002fa7",
     threshold: 120
-  }
 
   // Wheter to download and optimize remote images loaded from a url
   optimizeRemote: true,
+  },
+
+  //
+  // Declared image folder processing
+  //
+  // The options below are only useful if you'd like to process entire folders
+  // of images, regardless of whether or not they appear in any templates in
+  // your application (in addition to all the images that are found at build
+  // time). This is useful if you build dynamic strings to reference images you
+  // know should exist, but that cannot be determined at build time.
+
+  // Relative paths (starting from `/static`) of folders you'd like to process
+  // from top to bottom. This is a recursive operation, so all images that match
+  // the `processFoldersExtensions` array will be processed. For example, an
+  // array ['folder-a', 'folder-b'] will process all images in
+  // `./static/folder-a/` and `./static/folder-b`.
+  processFolders: [],
+
+  // When true, the folders in the options above will have all subfolders
+  // processed recursively as well.
+  processFoldersRecursively: false,
+
+  // Only files with these extensions will ever be processed when invoking
+  // `processFolders` above.
+  processFoldersExtensions: ["jpeg", "jpg", "png"],
+
+  // Add image sizes to this array to create different asset sizes for any image
+  // that is processed using `processFolders`
+  processFoldersSizes: false
 };
 ```
 
@@ -181,6 +214,64 @@ Following props are filled by preprocessor:
 - [x] Support WebP
 - [ ] Optimize background or whatever images found in CSS
 - [ ] Resolve imported images (only works with string pathnames at the moment)
+
+### Optimizing dynamically referenced images
+
+Svelte Image is great at processing all the images that you reference with
+string literals in your templates. When Sapper pre-processes your files, things
+like `<img src="/images/me.jpg">` and `<Image src="/images/you.jpg"/>` tell the
+pre-processor to create optimized versions of the files and rewrite the paths to
+point to the optimized version.
+
+However, we have no way of knowing the value of any dynamic paths at build time.
+
+```
+<img src={path}>
+
+```
+
+The code above is completely useless to our image processor, and so we ignore
+it.
+
+However, there may be times when you are well aware that you will be, for
+example, looping over a set of images that will be rendered in `<img>` tags and
+you would like the sources to be optimized. We can work around the limitation
+above by telling the pre-processor to optimize images in specific folders via
+the `processFolders` array in the config options.
+
+For example, if your config looks something like this
+
+```js
+import image from "svelte-image";
+
+
+svelte({
+  preprocess: {
+    ...image({
+      sizes: [200, 400],
+      processFolders: ['people/images']
+    }),
+  }
+})
+```
+
+Then, assuming you have the `people/images` folder populated inside your
+`static` folder, you can dynamically build strings that target optimized images
+like this:
+
+```svelte
+<script>
+  const images = ["lisa", "bart"]
+    .map(person => `/g/people/images/${person}-200.jpg`)
+</script>
+
+{#each images as personImage}
+  <img src={personImage}>
+{/each}
+```
+
+We will ignore your `<img>` at build time, but because we processed the entire
+`people/images` folder anyway, the images will be available to call at run time.
 
 ## Development
 
