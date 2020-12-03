@@ -128,7 +128,6 @@ const defaults = {
   // should be ./static for Sapper and ./public for plain Svelte projects
   publicDir: "./static/",
 
-
   placeholder: "trace", // or "blur",
 
   // WebP options [sharp docs](https://sharp.pixelplumbing.com/en/stable/api-output/#webp)
@@ -145,10 +144,10 @@ const defaults = {
     background: "#fff",
     color: "#002fa7",
     threshold: 120
+  },
 
   // Wheter to download and optimize remote images loaded from a url
   optimizeRemote: true,
-  },
 
   //
   // Declared image folder processing
