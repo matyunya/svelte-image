@@ -10,7 +10,7 @@
   export let srcset = "";
   export let srcsetWebp = "";
   export let ratio = "100%";
-  export let blur = false;
+  export let blur = true;
   export let sizes = "(max-width: 1000px) 100vw, 1000px";
   export let offset = 0;
   export let threshold = 1.0;
@@ -90,7 +90,7 @@
       {#if blurhash}
         <canvas class="placeholder" use:decodeBlurhash width={blurhashSize.width} height={blurhashSize.height} />
       {:else}
-        <img class="placeholder {placeholderClass}" {src} {alt} />
+        <img class="placeholder {placeholderClass}" class:blur {src} {alt} />
       {/if}
       <picture>
         <source type="image/webp" srcset="{srcsetWebp}" {sizes} />
@@ -99,7 +99,6 @@
           {src}
           use:load
           class="main {c} {className}"
-          class:blur
           {alt}
           {width}
           {height}
