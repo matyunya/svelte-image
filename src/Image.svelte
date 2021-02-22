@@ -6,6 +6,7 @@
   export let alt = "";
   export let width = null;
   export let height = null;
+  export let usemap = "";
   export let src = "";
   export let srcset = "";
   export let srcsetWebp = "";
@@ -102,6 +103,7 @@
           {alt}
           {width}
           {height}
+          {usemap}
         />
       </picture>
     </div>
