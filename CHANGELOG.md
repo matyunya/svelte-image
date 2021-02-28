@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+### Fixed
+- Bug where we would attempt to re-process folders when using
+  `processImageFolders` if the main export from this package was called multiple
+  times, even with the same options.
 
 
 ## 0.2.9 - 2020-12-16 UTC

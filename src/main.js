@@ -643,6 +643,7 @@ function processFolders() {
     .finally(() => (options.inlineBelow = inlineBelow));
 }
 
+let processFoldersRunIds = [];
 /**
  * @param {Partial<typeof options>} opts
  */
@@ -652,10 +653,22 @@ function getPreprocessor(opts = {}) {
     ...opts
   };
 
-  let ran = false;
   async function processFoldersOnce() {
-    if (ran) return;
-    ran = true;
+    const {
+      processFolders: foldersToProcess,
+      processFoldersExtensions,
+      processFoldersRecursively,
+      processFoldersSizes
+    } = options
+    const runId = JSON.stringify({
+      processFolders: foldersToProcess,
+      processFoldersExtensions,
+      processFoldersRecursively,
+      processFoldersSizes
+    })
+    
+    if (processFoldersRunIds.includes(runId)) return;
+    processFoldersRunIds.push(runId);
 
     await processFolders();
   }
