@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   times, even with the same options.
 - Bug where we would always download an external image, even if we had already
   done so.
+- Bug where options were not reset to defaults bewtween calls to
+  `getPreprocessor`
 
 
 ## 0.2.9 - 2020-12-16 UTC

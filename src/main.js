@@ -649,7 +649,7 @@ let processFoldersRunIds = [];
  */
 function getPreprocessor(opts = {}) {
   options = {
-    ...options,
+    ...JSON.parse(JSON.stringify(defaults)),
     ...opts
   };
 
