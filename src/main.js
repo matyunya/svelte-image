@@ -110,7 +110,7 @@ async function downloadImage(url, folder = ".") {
   const filename = `${hash}.${ext}`;
   const saveTo = path.resolve(folder, filename);
 
-  if (fs.existsSync(path)) return filename;
+  if (fs.existsSync(saveTo)) return filename;
 
   const writer = fs.createWriteStream(saveTo);
   const response = await axios({
