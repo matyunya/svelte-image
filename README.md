@@ -62,7 +62,7 @@ Please note that the library works only with paths from root in Sapper at the mo
 `<Image src="images/fuji.jpg" />` works the same as `<Image src="/images/fuji.jpg" />`.
 
 In reality, based on how Sapper moves the `static` folder into the root of your project,
-tchnically all image paths should probably start with a `/` to best represent actual paths.
+technically all image paths should probably start with a `/` to best represent actual paths.
 
 ### Svelte + Rollup
 
@@ -145,7 +145,7 @@ const defaults = {
     threshold: 120
   },
 
-  // Wheter to download and optimize remote images loaded from a url
+  // Whether to download and optimize remote images loaded from a url
   optimizeRemote: true,
 
   //
