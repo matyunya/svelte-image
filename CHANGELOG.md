@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
+### Fixed
+- Bug where we would attempt to re-process folders when using
+  `processImageFolders` if the main export from this package was called multiple
+  times, even with the same options.
+- Bug where we would always download an external image, even if we had already
+  done so.
+- Bug where options were not reset to defaults bewtween calls to
+  `getPreprocessor`
+
+
+## 0.2.9 - 2020-12-16 UTC
 ### Added
 - Optionally process entire folders of images, regardless of image references in
   your svelte components

@@ -110,7 +110,7 @@ async function downloadImage(url, folder = ".") {
   const filename = `${hash}.${ext}`;
   const saveTo = path.resolve(folder, filename);
 
-  if (fs.existsSync(path)) return filename;
+  if (fs.existsSync(saveTo)) return filename;
 
   const writer = fs.createWriteStream(saveTo);
   const response = await axios({
@@ -643,19 +643,32 @@ function processFolders() {
     .finally(() => (options.inlineBelow = inlineBelow));
 }
 
+let processFoldersRunIds = [];
 /**
  * @param {Partial<typeof options>} opts
  */
 function getPreprocessor(opts = {}) {
   options = {
-    ...options,
+    ...JSON.parse(JSON.stringify(defaults)),
     ...opts
   };
 
-  let ran = false;
   async function processFoldersOnce() {
-    if (ran) return;
-    ran = true;
+    const {
+      processFolders: foldersToProcess,
+      processFoldersExtensions,
+      processFoldersRecursively,
+      processFoldersSizes
+    } = options
+    const runId = JSON.stringify({
+      processFolders: foldersToProcess,
+      processFoldersExtensions,
+      processFoldersRecursively,
+      processFoldersSizes
+    })
+    
+    if (processFoldersRunIds.includes(runId)) return;
+    processFoldersRunIds.push(runId);
 
     await processFolders();
   }
