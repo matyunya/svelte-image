@@ -27,9 +27,7 @@ import image from "svelte-image";
 
 
 svelte({
-  preprocess: {
-    ...image(),
-  }
+  preprocess: image(),
 })
 ```
 
@@ -79,9 +77,7 @@ export default {
     ...
     svelte({
       ...
-      preprocess: {
-        ...image({...})
-      }
+      preprocess: image({...}),
     }),
     copy({
       targets: [{ src: 'static/g', dest: 'public' }],
@@ -244,12 +240,10 @@ import image from "svelte-image";
 
 
 svelte({
-  preprocess: {
-    ...image({
-      sizes: [200, 400],
-      processFolders: ['people/images']
-    }),
-  }
+  preprocess: image({
+    sizes: [200, 400],
+    processFolders: ['people/images']
+  }),
 })
 ```
 
