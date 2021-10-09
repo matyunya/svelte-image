@@ -30,7 +30,7 @@
   ],
   "homepage": "https://github.com/matyunya/svelte-image#readme",
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "0.22.0",
     "blurhash": "^1.1.3",
     "potrace": "latest",
     "sharp": "latest",
