@@ -4965,9 +4965,9 @@ svelte-waypoint@latest:
   integrity sha512-UEqoXZjJeKj2sWlAIsBOFjxjMn+KP8aFCc/zjdmZi1cCOE59z6T2C+I6ZaAf8EmNQqNzfZVB/Lci4Ci9spzXAw==
 
 svelte@^3.12.1:
-  version "3.12.1"
-  resolved "https://registry.yarnpkg.com/svelte/-/svelte-3.12.1.tgz#ddfacd43272ac3255907c682b74ee7d3d8b06b0c"
-  integrity sha512-t29WJNjHIqfrdMcVXqIyRfgLEaNz7MihKXTpb8qHlbzvf0WyOOIhIlwIGvl6ahJ9+9CLJwz0sjhFNAmPgo8BHg==
+  version "3.49.0"
+  resolved "https://registry.yarnpkg.com/svelte/-/svelte-3.49.0.tgz#5baee3c672306de1070c3b7888fc2204e36a4029"
+  integrity sha512-+lmjic1pApJWDfPCpUUTc1m8azDqYCG1JN9YEngrx/hUyIcFJo6VZhj0A1Ai0wqoHcEIuQy+e9tk+4uDgdtsFA==
 
 svelte@latest:
   version "3.24.1"
